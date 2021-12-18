@@ -1,6 +1,5 @@
-import Aurelia from 'aurelia';
-import { App } from './app';
+import Aurelia from "aurelia";
+import { App } from "./app";
+import { Floor } from "./components/floor/floor";
 
-Aurelia
-  .app(App)
-  .start();
+Aurelia.register(Floor).app(App).start();

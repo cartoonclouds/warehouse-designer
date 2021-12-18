@@ -14,6 +14,6 @@
     "src"
   ],
   "files": [
-    "src/resource.d.ts"
+    "src/resource.d.ts", "src/p5-types.d.ts"
   ]
 }
