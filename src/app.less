@@ -1,14 +1,35 @@
-.message {
-  background-color: lightblue;
+html,
+body {
+  height: 100%;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
 }
 
 body {
-  background: #eee;
-  padding: 0;
+  height: 100vh; /* Nice to not have to think about the HTML element parent */
   margin: 0;
-  display: flex;
-  justify-content: center;
-}
+  padding: 0;
 
-canvas {
+  app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    > main {
+      display: flex;
+      height: 100%;
+
+      canvas {
+        display: block;
+      }
+    }
+  }
 }
