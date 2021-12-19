@@ -1,22 +1,22 @@
-import { Hardware, Shelf } from ".";
-import { Dimensions } from "../hardware-types";
+import { Shelf } from "../..";
+import { Dimensions } from "../../../hardware-types";
+import { Maths } from "../../../utils/math";
 
-export class Rack extends Hardware {
+export class Rack {
   public name: string;
   public code: string;
   public dimensions: Dimensions;
   public shelves: Shelf[] = [];
+  public edges = [];
 
   protected p5Structure = {
-    x: 10 * Math.random(),
-    y: 100 * Math.random(),
-    width: 60 * Math.random(),
-    height: 40 * Math.random()
+    x: Maths.random(1, 1200),
+    y: Maths.random(1, 550),
+    width: 80,
+    height: 80
   };
 
-  // levels
   constructor(rackDetails?: Partial<Rack>) {
-    super();
 
     if (rackDetails) {
       rackDetails = Object.assign(new Rack(), rackDetails);
@@ -31,8 +31,10 @@ export class Rack extends Hardware {
   }
 
   public draw(p5: p5) {
-    console.log('drawing new rack');
-    p5.background(255, 0, 0);
+    p5.push();
+
     p5.ellipse(this.p5Structure.x, this.p5Structure.y, this.p5Structure.width, this.p5Structure.height);
+
+    p5.pop();
   }
 }

@@ -1,21 +1,17 @@
-import { observable } from "@aurelia/runtime";
-import { inject } from "aurelia";
-import { Rack } from "../models";
 
-@inject()
+import { Rack } from "../components";
+
 export class WarehouseServiceProvider {
-  @observable racks: Rack[] = [];
+  private static racks: Rack[] = [];
 
   public drawFloor(p5) {
-    this.racks.forEach((rack: Rack) => {
-      console.log('looping to draw');
+    WarehouseServiceProvider.racks.forEach((rack: Rack) => {
       rack.draw(p5);
     })
   }
 
-  public newRack(rackDetails?: Partial<Rack>) {
-    console.log('adding new rack');
-    const newRack = new Rack(rackDetails);
-    this.racks.push(newRack);
+  public static addRack(rackDetails?: Partial<Rack>) {
+    const addRack = new Rack(rackDetails);
+    WarehouseServiceProvider.racks.push(addRack);
   }
 }

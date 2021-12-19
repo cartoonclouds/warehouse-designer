@@ -1,5 +1,5 @@
 import Aurelia from "aurelia";
 import { App } from "./app";
-import { TitleBar, Sidebar, Floor, StatusBar } from "./components";
+import { MenuBar, Floor, StatusBar, Rack } from "./components";
 
-Aurelia.register(TitleBar, Sidebar, Floor, StatusBar).app(App).start();
+Aurelia.register(MenuBar, Floor, StatusBar, Rack).app(App).start();

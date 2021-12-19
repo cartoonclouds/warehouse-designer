@@ -1,13 +1,12 @@
-import { Hardware } from ".";
-import { Dimensions } from "../hardware-types";
 
-export class Shelf extends Hardware {
+import { Dimensions } from "../../../hardware-types";
+
+export class Shelf {
   public dimensions: Dimensions;
 
   protected p5Structure;
 
   constructor(shelfDetails?: Partial<Shelf>) {
-    super();
 
     if (shelfDetails) {
       shelfDetails = Object.assign(new Shelf(), shelfDetails);
@@ -19,6 +18,8 @@ export class Shelf extends Hardware {
   }
 
   public draw(p5: p5) {
+    p5.push();
 
+    p5.pop();
   }
 }
