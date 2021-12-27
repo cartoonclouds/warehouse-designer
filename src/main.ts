@@ -1,5 +1,7 @@
 import Aurelia from "aurelia";
 import { App } from "./app";
-import { MenuBar, Floor, StatusBar, Rack } from "./components";
+import * as globalComponents from "./components";
 
-Aurelia.register(MenuBar, Floor, StatusBar, Rack).app(App).start();
+import '../src/assets/fontawesome-pro-5.2.0/js/all.js';
+
+Aurelia.register(<any>globalComponents).app(App).start();

@@ -3,6 +3,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const Dotenv = require("dotenv-webpack");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const cssLoader = "css-loader";
 const lessLoader = "less-loader";
@@ -46,14 +47,20 @@ module.exports = function (env, { analyze }) {
     },
     module: {
       rules: [
-        { test: /\.(png|svg|jpg|jpeg|gif)$/i, type: "asset" },
+        { test: /\.(png|svg|jpg|jpeg|gif)$/i, use: "file-loader" },
         {
-          test: /\.(woff|woff2|ttf|eot|svg|otf)(\?v=[0-9]\.[0-9]\.[0-9])?$/i,
-          type: "asset",
+          test: /\.(woff|woff2|ttf|eot|svg|otf)(\?.*$|$)?$/i,
+          use: "file-loader",
         },
         {
-          test: /\.(le|c)ss$/i,
-          use: ["style-loader", cssLoader, postcssLoader, lessLoader],
+          test: /\.s?css$/i,
+          use: [
+            MiniCssExtractPlugin.loader,
+            // "style-loader", // Creates `style` nodes from JS strings
+            cssLoader, // Translates CSS into CommonJS
+            postcssLoader,
+            "sass-loader", // Compiles Sass to CSS
+          ],
         },
         {
           test: /\.ts$/i,
@@ -68,6 +75,7 @@ module.exports = function (env, { analyze }) {
       ],
     },
     plugins: [
+      new MiniCssExtractPlugin(),
       new HtmlWebpackPlugin({ template: "index.html" }),
       new Dotenv({
         path: `./.env${

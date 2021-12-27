@@ -1,0 +1,21 @@
+toggle-button-group {
+
+  button {
+    background-color: #fff;
+    border: 1px solid #d2d2d2;
+    border-radius: 3px;
+    width: 50px;
+    height: 46px;
+    margin-right: 8px;
+    font-size: 28px;
+
+    &.show-divider::after {
+      content: "";
+      display: block;
+      border: 1px solid #d2d2d2;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+$fa-font-path: "../src/assets/fontawesome-pro-5.2.0/webfonts";
+@import "../src/assets/fontawesome-pro-5.2.0/scss/solid";
+@import "../src/assets/fontawesome-pro-5.2.0/scss/regular";
+@import "../src/assets/fontawesome-pro-5.2.0/scss/light";
+@import "../src/assets/fontawesome-pro-5.2.0/scss/brands";
+@import "../src/assets/fontawesome-pro-5.2.0/scss/fontawesome";
+
+@import "../src/assets/scss/custom";
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  height: 100vh; /* Nice to not have to think about the HTML element parent */
+  margin: 0;
+  padding: 0;
+
+  app {
+    flex-direction: column;
+    height: 100%;
+    display: flex;
+
+    > main {
+      display: block;
+      flex: 1 0 auto;
+
+      canvas {
+        display: block;
+      }
+    }
+  }
+}
+
+// https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}

@@ -1,0 +1,12 @@
+<div class="btn-group" role="group" aria-label.bind="ariaLabel">
+
+  <template repeat.for="button of buttonGroup">
+    <input type="radio" class="btn-check" name="${name}" id="${button.id}" autocomplete="off" model.bind="button"
+      checked.bind="selectedButton">
+    <label class="btn btn-outline-secondary" for="${button.id}" click.trigger="triggerClick($event, button)">
+      <i class="${button.icon} button-icon"></i>
+      <span if.bind="!button.iconOnly && button.text" class="button-text">${button.text}</span>
+    </label>
+  </template>
+
+</div>

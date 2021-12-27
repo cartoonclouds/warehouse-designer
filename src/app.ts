@@ -1,76 +1,121 @@
-import { inject } from "aurelia";
+import { EventAggregator, IEventAggregator, IDisposable, inject } from "aurelia";
+
 import p5js from "p5";
-import { WarehouseServiceProvider } from "./service-providers/warehouse-service-provider";
+import { GridService } from "./service-providers/grid-service";
+import { WarehouseService } from "./service-providers/warehouse-service";
+import { DrawMode, UpdateDrawMode } from './messages/messages';
+import { observable } from '@aurelia/runtime';
+import { DOMUtility } from './utils/dom';
 
 @inject()
 export class App {
-  private p5: p5;
-  private canvas: HTMLCanvasElement;
-  private readonly grayScaleGridLineColor: number = 190;
-  private readonly gridCellWidth: number = 40;
-  private readonly gridCellHeight: number = 40;
+  public static p5: p5;
+  protected canvas;
+  protected gridServiceProvider: GridService;
+  protected updateDrawModeSubscription: IDisposable;
+
+  @observable protected drawingMode: DrawMode = DrawMode.SELECTION;
 
   constructor(
-    private readonly element: HTMLElement,
-    private readonly warehouseServiceProvider: WarehouseServiceProvider
+    protected readonly element: HTMLElement,
+    protected readonly warehouseService: WarehouseService,
+    @IEventAggregator protected readonly eventAggregator: EventAggregator
   ) { }
 
+
+  public binding() {
+    this.updateDrawModeSubscription = this.eventAggregator.subscribe(UpdateDrawMode, (message: UpdateDrawMode) => {
+      this.drawingMode = message.mode;
+
+      console.log(`App > Message.UpdateDrawMode(${this.drawingMode})`);
+    });
+  }
+
+  public unbinding() {
+    this.warehouseService.unsubscribe();
+    this.updateDrawModeSubscription.dispose();
+  }
+
   public attached() {
-    this.p5 = new p5js(this.sketch, this.element.querySelector("floor"));
+    this.warehouseService.subscribe();
+
+    App.p5 = new p5js(this.sketch, this.element.querySelector("floor"));
+
+    this.gridServiceProvider = new GridService(App.p5, 40, 40);
   }
 
   public detached() {
-    this.p5 = null;
+    App.p5 = null;
     this.canvas = null;
   }
 
-  private draw(p5) {
-    return () => {
-      p5.background(220);
 
-      this.drawGrid();
+  // https://p5js.org/learn/interactivity.html
+  // https://p5js.org/reference/#/p5/mouseWheel
 
-      if (p5.mouseIsPressed) {
-        p5.fill(0);
-      } else {
-        p5.fill(255);
-        10;
-      }
+  //p5.ellipse(p5.mouseX, p5.mouseY, 80, 80);
 
-      p5.ellipse(p5.mouseX, p5.mouseY, 80, 80);
-
-      this.warehouseServiceProvider.drawFloor(p5);
-    };
-  }
-
-  private setup(p5) {
-    return () => {
-      this.canvas = p5.createCanvas(this.boundingWidth, (this.boundingHeight - 100));
-    };
-  }
-
-  private windowResized(p5) {
-    return function () {
-      p5.resizeCanvas(this.boundingWidth, this.boundingHeight);
-    };
-  }
-
-  private drawGrid() {
-    this.p5.push();
-
-    for (let x = 0; x < this.p5.width; x += this.gridCellWidth) {
-      for (let y = 0; y < this.p5.height; y += this.gridCellHeight) {
-        this.p5.stroke(this.grayScaleGridLineColor);
-        this.p5.strokeWeight(1);
-        this.p5.line(x, 0, x, this.p5.height);
-        this.p5.line(0, y, this.p5.width, y);
-      }
+  public drawingModeChanged(newDrawMode: DrawMode) {
+    if (!App.p5) {
+      return;
     }
 
-    this.p5.pop();
+    if (newDrawMode === DrawMode.ADD_RACK) {
+      App.p5.loop();
+    } else {
+      App.p5.noLoop();
+    }
   }
 
-  private get sketch() {
+  /**
+   * Draw canvas warehouse floor.
+   * 
+   * @param p5 
+   * @returns 
+   */
+  protected draw(p5) {
+    return () => {
+      // draw grid
+      this.gridServiceProvider.drawGrid();
+
+      // draw created hardward objects
+      this.warehouseService.drawFloor(p5);
+
+      // trigger draw on hover of warehouse floor
+      this.warehouseService.warehouseHover(p5);
+
+      // console.log('App > Draw()');
+    };
+  }
+
+  /**
+   * Create canvas setup callback.
+   * 
+   * @param p5 
+   * @returns 
+   */
+  protected setup(p5) {
+    return () => {
+      // create the canvas
+      this.canvas = p5.createCanvas(p5.windowWidth, (DOMUtility.boundingHeight() - 100));
+
+      // attached on mouse-clicked event to warehouse floor
+      this.canvas.mouseClicked((event) => {
+        this.warehouseService.onMouseClicked(p5);
+      });
+
+      this.canvas.mouseMoved((event) => {
+        this.warehouseService.onMouseOver(p5);
+      })
+
+      p5.noLoop();
+    };
+  }
+
+  /**
+   * Setup canvas sketch.
+   */
+  protected get sketch() {
     return (p5) => {
       //p5.preload = this.preload();
 
@@ -78,18 +123,33 @@ export class App {
 
       p5.draw = this.draw(p5);
 
-      p5.windowResized = this.windowResized(p5);
+      // p5.windowResized = this.windowResized(p5);
 
       //p5.remove = this.remove();
     };
   }
 
-  private get boundingHeight(): number {
-    return window.innerHeight;
-    return (document.querySelector("sidebar") as HTMLElement).offsetHeight;
-  }
 
-  private get boundingWidth(): number {
-    return window.innerWidth;
+
+
+  // onHover
+
+  /**
+   *   if (mouseIsPressed == true) {
+    cursor(HAND);  // Draw cursor as hand
   }
+  else {
+    cursor(CROSS); // Draw cursor as cross
+  }
+   */
+
+  // protected windowResized(p5) {
+  //   return function () {
+  //     p5.resizeCanvas(this.boundingWidth, this.boundingHeight);
+  //   };
+  // }
+
+  // public p5Changed(newInstance) {
+  //   // this.gridServiceProvider.p5 = newInstance;
+  // }
 }
