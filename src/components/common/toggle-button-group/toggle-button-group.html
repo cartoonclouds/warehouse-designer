@@ -3,7 +3,8 @@
   <template repeat.for="button of buttonGroup">
     <input type="radio" class="btn-check" name="${name}" id="${button.id}" autocomplete="off" model.bind="button"
       checked.bind="selectedButton">
-    <label class="btn btn-outline-secondary" for="${button.id}" click.trigger="triggerClick($event, button)">
+    <label class="btn btn-outline-${button.selected ? 'primary' : 'secondary'}" for="${button.id}"
+      click.trigger="triggerClick($event, button)" title="${button.text}">
       <i class="${button.icon} button-icon"></i>
       <span if.bind="!button.iconOnly && button.text" class="button-text">${button.text}</span>
     </label>

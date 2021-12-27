@@ -11,7 +11,7 @@ export enum DrawMode {
 
 export class UpdateDrawMode {
   public mode: DrawMode;
-  
+
   constructor(mode: DrawMode) {
     this.mode = mode;
   }
@@ -19,9 +19,19 @@ export class UpdateDrawMode {
 
 export class CreateRack {
   public rackDetails: Partial<Rack>;
-  
+
   constructor(rackDetails?: Partial<IRack>) {
     this.rackDetails = rackDetails;
   }
 
 }
+
+
+export class DeleteRack {
+  public rack;
+
+  constructor(rack) {
+    this.rack = rack;
+  }
+}
+

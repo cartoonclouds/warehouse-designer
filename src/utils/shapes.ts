@@ -47,14 +47,14 @@ export class RectangleUtility implements Rectangle {
 
   public get topLeft(): Point {
     return {
-      x: this.point.x,
-      y: this.point.y
+      x: this.point.x - (this.dimensions.width / 2),
+      y: this.point.y - (this.dimensions.height / 2)
     };
   }
 
   public get topRight(): Point {
     return {
-      x: this.point.x + this.dimensions.width,
+      x: this.point.x + (this.dimensions.width / 2),
       y: this.point.y
     };
   }
@@ -62,14 +62,14 @@ export class RectangleUtility implements Rectangle {
   public get bottomLeft(): Point {
     return {
       x: this.point.x,
-      y: this.point.y + this.dimensions.height
+      y: this.point.y + (this.dimensions.height / 2)
     };
   }
 
   public get bottomRight(): Point {
     return {
-      x: this.point.x + this.dimensions.width,
-      y: this.point.y + this.dimensions.height
+      x: this.point.x + (this.dimensions.width / 2),
+      y: this.point.y + (this.dimensions.height / 2)
     };
   }
 }

@@ -36,6 +36,7 @@ export class Rack extends Hardware implements IRack, IInteractable {
 
   protected p5: p5;
   protected selected: boolean = false;
+  protected mouseOver: boolean = false;
 
   constructor(rackDetails?: Partial<Rack>) {
     super();
@@ -57,42 +58,46 @@ export class Rack extends Hardware implements IRack, IInteractable {
   /** EVENT HANDLING FUNCTIONS */
   /*************************** */
 
-
   public draw(p5: p5, drawingMode: DrawMode) {
-    this.p5 = p5;
-
-    // p5.push();
+    p5.push();
     p5.rectMode(p5.CENTER);
 
 
-    // const cursorContains = this.contains(MouseUtilities.coords(p5));
+    if (this.selected) {
+      p5.fill(255, 0, 0)
+    } else {
+      p5.noFill();
+    }
 
-    // if (cursorContains) {
-    //   if (p5.mouseIsPressed) {
-    //     p5.fill(255, 0, 0);
-    //   } else {
-    //     p5.fill(0);
-    //   }
-    // }
 
-    p5.rect(this.p5Structure.x, this.p5Structure.y, this.p5Structure.width, this.p5Structure.height, this.cornerRadius, this.cornerRadius, this.cornerRadius, this.cornerRadius);
+    if (this.mouseOver) {
+      p5.strokeWeight(3);
 
-    // p5.pop();
+      p5.cursor(p5.HAND);
 
+      console.log(`Rack > onMouseOver(${this.name})`);
+    } else {
+      p5.strokeWeight(1);
+
+      p5.cursor(p5.ARROW);
+    }
+
+
+    p5.rect(this.p5Structure.x, this.p5Structure.y, this.p5Structure.width, this.p5Structure.height, this.cornerRadius);
+
+    p5.pop();
     // console.log(`Rack > draw()`);
   }
 
   public onMouseClicked(p5: p5, drawingMode: DrawMode) {
+
     const cursorContains = this.contains(MouseUtility.coords(p5));
 
     if (cursorContains) {
       this.selected = !this.selected;
 
 
-      this.selected ? this.p5.fill(255, 0, 0) : this.p5.noFill();
-
-
-      console.log(`Rack > onMouseClicked(${this.name})`);
+      console.log(`Rack > onMouseClicked(${this.name}) > Selected(${this.selected ? "T" : "F"})`);
     } else {
       this.selected = false;
     }
@@ -102,14 +107,13 @@ export class Rack extends Hardware implements IRack, IInteractable {
   }
 
   public onMouseOver(p5: p5, drawingMode: DrawMode) {
+
     const cursorContains = this.contains(MouseUtility.coords(p5));
 
-    if (cursorContains) {
-      this.p5.strokeWeight(4);
+    this.mouseOver = cursorContains;
 
-      console.log(`Rack > onMouseOver(${this.name})`);
-    } else {
-      this.p5.strokeWeight(1);
+    if (cursorContains) {
+      console.log(`Rack > onMouseOver(${this.name}) > MouseOver(${this.mouseOver ? "T" : "F"})`);
     }
 
     this.draw(p5, drawingMode);

@@ -1,3 +1,4 @@
+import { App } from "../app";
 import { DOMUtility } from "../utils/dom";
 
 export enum GridDrawingStyle {
@@ -26,7 +27,7 @@ export class GridService {
       return;
     }
 
-    const canvasGrid = this.p5.createGraphics(DOMUtility.boundingWidth(), (DOMUtility.boundingHeight() - 100));
+    const canvasGrid = this.p5.createGraphics(DOMUtility.boundingWidth(), (DOMUtility.boundingHeight() - App.InfoBarHeight));
 
     canvasGrid.background("220");
 

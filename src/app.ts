@@ -9,6 +9,9 @@ import { DOMUtility } from './utils/dom';
 
 @inject()
 export class App {
+  public static readonly InfoBarHeight = 104;
+
+
   public static p5: p5;
   protected canvas;
   protected gridServiceProvider: GridService;
@@ -97,20 +100,40 @@ export class App {
   protected setup(p5) {
     return () => {
       // create the canvas
-      this.canvas = p5.createCanvas(p5.windowWidth, (DOMUtility.boundingHeight() - 100));
+      this.canvas = p5.createCanvas(p5.windowWidth, (DOMUtility.boundingHeight() - App.InfoBarHeight));
 
       // attached on mouse-clicked event to warehouse floor
       this.canvas.mouseClicked((event) => {
-        this.warehouseService.onMouseClicked(p5);
+        this.warehouseService.onMouseClicked(p5, event);
       });
 
       this.canvas.mouseMoved((event) => {
-        this.warehouseService.onMouseOver(p5);
+        this.warehouseService.onMouseOver(p5, event);
       })
 
       p5.noLoop();
     };
   }
+
+  public onKeyPressed(p5: p5) {
+    return () => {
+      this.warehouseService.onKeyPressed(p5);
+
+
+      console.log('App > onKeyPressed()');
+    }
+  }
+
+
+  public onKeyRelease(p5: p5) {
+    return () => {
+      this.warehouseService.onKeyRelease(p5);
+
+
+      console.log('App > onKeyRelease()');
+    }
+  }
+
 
   /**
    * Setup canvas sketch.
@@ -123,6 +146,11 @@ export class App {
 
       p5.draw = this.draw(p5);
 
+      p5.keyPressed = this.onKeyPressed(p5);
+
+      p5.keyReleased = this.onKeyRelease(p5);
+
+
       // p5.windowResized = this.windowResized(p5);
 
       //p5.remove = this.remove();
@@ -132,16 +160,6 @@ export class App {
 
 
 
-  // onHover
-
-  /**
-   *   if (mouseIsPressed == true) {
-    cursor(HAND);  // Draw cursor as hand
-  }
-  else {
-    cursor(CROSS); // Draw cursor as cross
-  }
-   */
 
   // protected windowResized(p5) {
   //   return function () {

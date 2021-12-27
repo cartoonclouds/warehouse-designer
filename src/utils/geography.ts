@@ -59,6 +59,13 @@ export default class GeographyUtilities {
    * @returns {boolean}
    */
   public static pointContainsPolygon(polygon: Point[], point: Point) {
+
+    return (point.x >= polygon[0].x && point.x <= polygon[1].x && point.y >= polygon[0].y && point.y <= polygon[2].y);
+
+
+
+
+
     /* Calculate GeographyUtilities.area of rectangle ABCD */
     let A = GeographyUtilities.area(polygon[0], polygon[1], polygon[2]) + GeographyUtilities.area(polygon[0], polygon[3], polygon[2]);
 
@@ -74,8 +81,7 @@ export default class GeographyUtilities {
     /* Calculate GeographyUtilities.area of triangle PAD */
     let A4 = GeographyUtilities.area(point, polygon[0], polygon[3]);
 
-    /* Check if sum of A1, A2, A3 and A4 
-    is same as A */
+    /* Check if sum of A1, A2, A3 and A4 is same as A */
     return (A == A1 + A2 + A3 + A4);
 
 
