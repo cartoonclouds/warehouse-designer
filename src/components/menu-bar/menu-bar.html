@@ -1,5 +1,6 @@
 <nav>
-  <toggle-button-group aria-label="Hardware control button group" name="hardware-creation-buttons"
-    button-group.bind="buttons">
-  </toggle-button-group>
+  <template repeat.for="buttonGroup of buttonGroups">
+    <toggle-button-group aria-label="${buttonGroup.label}" name="action-buttons"
+      button-group.bind="buttonGroup.buttons"></toggle-button-group>
+  </template>
 </nav>

@@ -1,10 +1,10 @@
 
 import { UpdateDrawMode, DrawMode } from "../../messages/messages";
-import { EventAggregator, IDisposable, IEventAggregator } from "aurelia";
-import { ToggleButton, ToggleButtonGroup } from '../common/toggle-button-group/toggle-button-group';
+import { EventAggregator, IEventAggregator } from "aurelia";
+import { ToggleButton } from '../common/toggle-button-group/toggle-button-group';
 
 export class MenuBar {
-    public buttons: ToggleButton[] = [
+    public hardwareActions: ToggleButton[] = [
         new ToggleButton({
             icon: "far fa-hand-pointer",
             text: "Selection Hardware",
@@ -55,6 +55,50 @@ export class MenuBar {
             }
         }),
     ];
+
+
+    public historyActions: ToggleButton[] = [
+        new ToggleButton({
+            icon: "fas fa-undo",
+            text: "Undo",
+            drawMode: DrawMode.UNDO,
+            clickAction: () => {
+
+                this.eventAggregator.publish(new UpdateDrawMode(DrawMode.UNDO));
+
+                console.log(`MenuBar > historyActions > UNDO`);
+
+                return true;
+            }
+        }),
+        new ToggleButton({
+            icon: "fas fa-redo",
+            text: "Redo",
+            drawMode: DrawMode.REDO,
+            clickAction: () => {
+
+                this.eventAggregator.publish(new UpdateDrawMode(DrawMode.REDO));
+
+
+                console.log(`MenuBar > historyActions > REDO`);
+
+                return true;
+            }
+        }),
+    ];
+
+    public get buttonGroups() {
+        return [
+            {
+                label: "Hardware control button group",
+                buttons: this.hardwareActions
+            },
+            {
+                label: "Canvas history control button group",
+                buttons: this.historyActions
+            }
+        ]
+    }
 
     constructor(@IEventAggregator protected readonly eventAggregator: EventAggregator) {
         //

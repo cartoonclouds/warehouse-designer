@@ -6,7 +6,10 @@ export enum DrawMode {
   SELECTION = "selection",
   ADD_RACK = "add-rack",
   ADD_SHELF = "add-shelf",
-  DELETE_HARDWARE = "delete-hardware"
+  DELETE_HARDWARE = "delete-hardware",
+
+  REDO = "redo",
+  UNDO = "undo"
 }
 
 export class UpdateDrawMode {

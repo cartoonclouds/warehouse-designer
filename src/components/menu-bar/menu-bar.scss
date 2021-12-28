@@ -1,7 +1,8 @@
-menu-bar {
-  display: block;
+menu-bar nav {
+  display: flex;
   padding: 8px;
   background-color: #eee;
 
   flex: 0 1 auto;
+  column-gap: 20px;
 }

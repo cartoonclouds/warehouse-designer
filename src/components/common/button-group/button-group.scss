@@ -1,19 +1,16 @@
-toggle-button-group {
-  .btn-check:focus + label {
-    outline: 0 !important;
-    box-shadow: none !important;
-  }
-
-  label {
+button-group {
+  button {
     border-radius: 3px;
-    // width: 50px;
-    // height: 46px;
+
+    &:focus {
+      outline: 0 !important;
+      box-shadow: none !important;
+    }
 
     &.show-divider::after {
       content: "";
       display: block;
       border: 1px solid #d2d2d2;
-      width: 2px;
       right: 0;
       top: 0;
       bottom: 0;

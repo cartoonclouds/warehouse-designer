@@ -1,11 +1,9 @@
-import { EventAggregator, IEventAggregator, IDisposable, inject } from "aurelia";
+import { EventAggregator, IEventAggregator, inject } from "aurelia";
 
 import { GridService } from "./service-providers/grid-service";
-import { WarehouseService } from "./service-providers/warehouse-service";
-import { DrawMode, UpdateDrawMode, CreateRack } from './messages/messages';
-import { observable } from '@aurelia/runtime';
+import { WarehouseCanvas } from './utils/warehouse-canvas';
+import { DrawMode, UpdateDrawMode } from './messages/messages';
 import { DOMUtility } from './utils/dom';
-import { fabric } from "fabric";
 
 @inject()
 export class App {
@@ -13,37 +11,36 @@ export class App {
 
   protected canvas;
   protected gridService: GridService;
+  protected warehouseCanvas: WarehouseCanvas
 
   constructor(
     protected readonly element: HTMLElement,
-    protected readonly warehouseService: WarehouseService,
     @IEventAggregator protected readonly eventAggregator: EventAggregator
-  ) { }
+  ) {
+  }
 
 
   public unbinding() {
-    this.warehouseService.unsubscribe();
+    this.warehouseCanvas.unsubscribe();
   }
 
   public attached() {
-    this.warehouseService.subscribe();
-
     // create fabric canvas instance
-    const warehouseCanvas = new fabric.Canvas("floor", {
+    this.warehouseCanvas = new WarehouseCanvas({
+      element: "floor",
+      eventAggregator: this.eventAggregator,
+    }, {
+      selection: false,
       width: DOMUtility.boundingWidth(),
       height: (DOMUtility.boundingHeight() - App.InfoBarHeight)
     });
 
-    // update WarehouseService's reference to p5 instance
-    this.warehouseService.setWarehouseCanvas(warehouseCanvas);
-
     // create grid instance
-    this.gridService = new GridService(warehouseCanvas, 40, 40);
+    this.gridService = new GridService(this.warehouseCanvas, 40, 40);
     this.gridService.drawGrid();
 
     // set initial draw mode as SELECTION
     this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
-
   }
 
   public detached() {

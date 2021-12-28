@@ -3,48 +3,36 @@ import { observable } from '@aurelia/runtime';
 import { v4 as uuidv4 } from 'uuid';
 import { DrawMode, UpdateDrawMode } from '../../../messages/messages';
 
-export class ToggleButton {
+export class MenuButton {
   public id: string;
   public text: string;
   public icon: string;
   public iconOnly: boolean = true;
-  public selected: boolean = false;
   public clickAction: (e?: MouseEvent | KeyboardEvent) => boolean | void;
   public drawMode?: DrawMode;
 
-  constructor(params: Partial<ToggleButton>) {
+  constructor(params: Partial<MenuButton>) {
     this.id = params.id ?? uuidv4();
     this.drawMode = params.drawMode;
     this.text = params.text;
     this.iconOnly = params.iconOnly ?? this.iconOnly;
     this.icon = params.icon;
     this.clickAction = params.clickAction;
-    this.selected = params.selected;
   }
 }
 
 @inject()
-export class ToggleButtonGroup {
+export class ButtonGroup {
   @bindable({ mode: BindingMode.toView }) name: string;
   @bindable({ mode: BindingMode.toView }) ariaLabel: string;
   @bindable({ mode: BindingMode.toView }) showDivider: boolean = true;
-  @bindable({ mode: BindingMode.twoWay }) buttonGroup: ToggleButton[];
+  @bindable({ mode: BindingMode.twoWay }) buttonGroup: MenuButton[];
 
   @observable selectedButton;
   protected updateDrawModeSubscription: IDisposable;
 
 
-  constructor(protected readonly element: HTMLElement, @IEventAggregator protected readonly eventAggregator: EventAggregator) {
-    this.updateDrawModeSubscription = this.eventAggregator.subscribe(UpdateDrawMode, (message: UpdateDrawMode) => {
-      const actionButton = this.findButton(message.mode);
-
-      if (actionButton) {
-        this.selectedButton = actionButton;
-      }
-
-
-      console.log(`ToggleButtonGroup > Message.UpdateDrawMode(${message.mode})`);
-    });
+  constructor(protected readonly element: HTMLElement) {
   }
 
   public unbinding() {
@@ -55,30 +43,27 @@ export class ToggleButtonGroup {
     if (this.showDivider) {
       this.element.classList.add('show-divider');
     }
-
-    this.selectedButton = this.buttonGroup.find(button => button.selected);
-
-    this.buttonGroup.forEach((button) => {
-      button.selected = this.selectedButton == button;
-    });
-
-    console.log(this.selectedButton);
   }
 
-  public findButton(drawMode: DrawMode) {
-    for (const button of this.buttonGroup) {
-      if (button.drawMode == drawMode) {
-        return button;
-      }
-    }
+  public triggerMouseDown(event, button) {
+    const element = event.toElement as HTMLButtonElement;
 
-    return null;
+    // element.classList.remove("btn-outline-secondary");
+    // element.classList.add("btn-outline-primary");
   }
 
-  public triggerClick($event, button) {
-    this.selectedButton = button;
+  public triggerMouseUp(event, button) {
+    console.log(event);
 
-    button.clickAction($event);
+    const element = event.target as HTMLButtonElement;
+
+    // element.classList.remove("btn-outline-primary");
+    // element.classList.add("btn-outline-secondary");
+  }
+
+
+  public triggerClick(event, button) {
+    button.clickAction(event);
 
     return true;
   }

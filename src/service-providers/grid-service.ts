@@ -30,14 +30,23 @@ export class GridService {
       return;
     }
 
-
-    for (var i = 0; i < (this.warehouseCanvasEl.width / this.gridWidthOrCount); i++) {
-      this.warehouseCanvas.add(new fabric.Line([i * this.gridHeightOrCount, 0, i * this.gridHeightOrCount, this.warehouseCanvasEl.height], { type: 'line', stroke: '#ccc', selectable: false }));
-      this.warehouseCanvas.add(new fabric.Line([0, i * this.gridWidthOrCount, this.warehouseCanvasEl.width, i * this.gridWidthOrCount], { type: 'line', stroke: '#ccc', selectable: false }))
+    for (var i = 0; i < (this.DOMCanvas.width / this.gridWidthOrCount); i++) {
+      this.warehouseCanvas.add(new fabric.Line([i * this.gridHeightOrCount, 0, i * this.gridHeightOrCount, this.DOMCanvas.height], this.properties));
+      this.warehouseCanvas.add(new fabric.Line([0, i * this.gridWidthOrCount, this.DOMCanvas.width, i * this.gridWidthOrCount], this.properties))
     }
+
+    this.warehouseCanvas.renderAll();
   }
 
-  protected get warehouseCanvasEl() {
+  protected get properties() {
+    return { 
+      type: 'line', 
+      stroke: '#ccc', 
+      selectable: false 
+    };
+  }
+
+  protected get DOMCanvas() {
     return this.warehouseCanvas.getContext().canvas;
   }
 

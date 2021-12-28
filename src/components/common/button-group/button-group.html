@@ -1,0 +1,12 @@
+<div class="btn-group" role="group" aria-label.bind="ariaLabel">
+
+  <template repeat.for="button of buttonGroup">
+    <button class="btn btn-outline-secondary" name="${name}" id="${button.id}"
+      click.trigger="triggerClick($event, button)" mousedown.trigger="triggerMouseDown($event, button)"
+      mouseup.trigger="triggerMouseUp($event, button)" title="${button.text}">
+      <i class="${button.icon} button-icon"></i>
+      <span if.bind="!button.iconOnly && button.text" class="button-text">${button.text}</span>
+    </button>
+  </template>
+
+</div>

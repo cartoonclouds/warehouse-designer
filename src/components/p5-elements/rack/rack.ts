@@ -1,6 +1,7 @@
 import { EventAggregator } from "aurelia";
 import { fabric } from "fabric";
 import { HardWareDeselected, HardWareSelected } from '../../../messages/messages';
+import FabricJSUtil from '../../../utils/fabricjs';
 
 
 export type IRack = Rack | fabric.IRectOptions;
@@ -38,7 +39,9 @@ export class Rack extends RackHardware {
       stroke: '#000',
       strokeWidth: 2,
       lockRotation: true,
-      hasControls: false
+      hasControls: false,
+      hoverCursor: 'pointer',
+      perPixelTargetFind: true
     }, rackDetails));
 
     rackDetails = Object.assign({
@@ -49,7 +52,9 @@ export class Rack extends RackHardware {
       stroke: '#000',
       strokeWidth: 2,
       lockRotation: true,
-      hasControls: false
+      hasControls: false,
+      hoverCursor: 'pointer',
+      perPixelTargetFind: true
     }, rackDetails);
 
     Object.assign(this, rackDetails);
@@ -65,22 +70,18 @@ export class Rack extends RackHardware {
   protected attachEvents() {
 
     this.on("mouseover", (e: fabric.IEvent<MouseEvent>) => {
-      this.set('strokeWidth', 2);
-      //this.setOpacity(DrawingColours.WHITE, DEFAULT_OPACITY)
-      //required see "When to call setCoords" github page
-      this.setCoords();
-      this._render(this.warehouseCanvas.getContext());
+      this.setMouseOverStyles();
+
+      this.render(this.warehouseCanvas.getContext());
 
       console.log(`mouseover ${this.label}`);
 
     });
 
     this.on("mouseout", (e: fabric.IEvent<MouseEvent>) => {
-      this.set('strokeWidth', 1);
+      this.setMouseOutStyles();
 
-      //required see "When to call setCoords" github page
-      this.setCoords();
-      this._render(this.warehouseCanvas.getContext());
+      this.render(this.warehouseCanvas.getContext());
 
       console.log(`mouseout ${this.label}`);
 
@@ -110,19 +111,68 @@ export class Rack extends RackHardware {
 
   }
 
+  public intersectsRect(rack: Rack) {
+    const shadowRackCoords = this.getCoords();
+
+    return rack.containsPoint(shadowRackCoords[0].scalarSubtract(1))
+      || rack.containsPoint(shadowRackCoords[1].scalarSubtract(1))
+      || rack.containsPoint(shadowRackCoords[2].scalarSubtract(1))
+      || rack.containsPoint(shadowRackCoords[3].scalarSubtract(1));
+
+    // && !this.isTargetTransparent(_obj, mousePosition.x, mousePosition.y);
+
+    return rack.isContainedWithinObject(this)
+      || rack.intersectsWithObject(this)
+      || this.isContainedWithinObject(rack);
+  }
+
+
+  protected setMouseOverStyles() {
+    this.setOptions({
+      strokeWidth: 2,
+      // borderDashArray: [10, 10]
+    });
+
+    //this.setOptionsOpacity(DrawingColours.WHITE, DEFAULT_OPACITY)
+    //required see "When to call setCoords" github page
+    this.setCoords();
+  }
+
+  protected setMouseOutStyles() {
+    this.setOptions({
+      strokeWidth: 1,
+      borderDashArray: undefined
+    });
+
+    //required see "When to call setCoords" github page
+    this.setCoords();
+  }
+
   protected setSelectedStyles() {
-    this.set('fill', '#0d6efd');
-    this.set('strokeWidth', 2);
+    this.setOptions({
+      strokeWidth: 2,
+      fill: '#0d6efd'
+    });
+
+    this.setCoords();
   }
 
   protected setDeselectedStyles() {
-    this.set('fill', '#adb5bd');
-    this.set('strokeWidth', 1);
+    this.setOptions({
+      strokeWidth: 1,
+      fill: '#adb5bd'
+    });
+
+    this.setCoords();
   }
 
   public _render(ctx: CanvasRenderingContext2D) {
     super._render(ctx);
 
+    this.renderLabel(ctx);
+  }
+
+  protected renderLabel(ctx: CanvasRenderingContext2D) {
     ctx.font = '14px Helvetica';
     ctx.fillStyle = '#333';
     ctx.fillText(this.label, -this.width / 2, -this.height / 2 - 10);
@@ -137,11 +187,12 @@ export class Rack extends RackHardware {
     this.set('label', this.label || '');
   };
 
-  // public toObject() {
-  //   return fabric.util.object.extend(this.callSuper('toObject'), {
-  //     label: this.get('label')
-  //   });
-  // },
+
+  public toObject() {
+    return fabric.util.object.extend(super.toObject(), {
+      label: this.get('label')
+    });
+  }
 }
 export class ShadowRack extends Rack {
   public static readonly type: string = "ShadowRack";
