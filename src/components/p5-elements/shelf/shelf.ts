@@ -1,66 +1,68 @@
 
-import { Dimensions, isRack, isShelf, Point, Rectangle } from "../../../hardware-types";
-import MathUtility from "../../../utils/maths";
-import { Hardware } from "../hardware";
+import { Dimensions, Point, Rectangle } from '../../../hardware-types';
 import { RectangleUtility } from "../../../utils/shapes";
-import GeographyUtility from "../../../utils/geography";
 import { DrawMode } from '../../../messages/messages';
 
-export class Shelf extends Hardware {
+// extends Hardware
+export class Shelf {
   public name: string;
   public code: string;
   public dimensions: Dimensions;
   public point: Point;
 
+  protected p5: p5;
   protected selected: boolean = false;
 
-  constructor(shelfDetails?: Partial<Shelf>) {
-    super();
-
-    //@TODO get default sizing
-    this.dimensions = {
-      width: 80,
-      height: 80
-    };
-
-    this.point = {
-      x: MathUtility.random(1, 1200),
-      y: MathUtility.random(1, 550),
-    };
-
-    if (shelfDetails) {
-      shelfDetails = Object.assign(new Shelf(), shelfDetails);
-
-      const { name, code, dimensions, point } = shelfDetails;
-
-      this.name = name;
-      this.code = code;
-      this.dimensions = dimensions;
-      this.point = point;
-    }
+  constructor(p5: p5, shelfDetails?: Partial<Shelf>) {
+    // super();
+    /*
+        //@TODO get default sizing
+        this.dimensions = {
+          width: 80,
+          height: 80
+        };
+    
+        this.point = {
+          x: MathUtility.random(1, 1200),
+          y: MathUtility.random(1, 550),
+        };
+    
+        if (shelfDetails) {
+          shelfDetails = Object.assign(new Shelf(p5), shelfDetails);
+    (
+          const { name, code, dimensions, point } = shelfDetails;
+    
+          this.name = name;
+          this.code = code;
+          this.dimensions = dimensions;
+          this.point = point;
+        }
+    
+        this.p5 = p5;*/
   }
+  /*
+    private get p5Structure() {
+      return Object.assign({}, this.point, this.dimensions);
+    };
+  */
 
-  private get p5Structure() {
-    return Object.assign({}, this.point, this.dimensions);
-  };
+  public draw(drawingMode: DrawMode) {
+    // this.p5.push();
 
-
-  public draw(p5: p5, drawingMode: DrawMode) {
-    p5.push();
-
-    p5.pop();
+    // this.p5.pop();
   }
 
   public intersects(hardware): boolean {
-    if (isRack(hardware) || isShelf(hardware)) {
-      return GeographyUtility.rectangleIntersectsRectangle(this.asRectangle, hardware.asRectangle);
-    } else {
-      new Error(`No typescript user-defined guard is${hardware.modelName}`);
-    }
+    return false;
+    // if (isRack(hardware) || isShelf(hardware)) {
+    //   return GeographyUtility.rectangleIntersectsRectangle(this.asRectangle, hardware.asRectangle);
+    // } else {
+    //   new Error(`No typescript user-defined guard is${hardware.modelName}`);
+    // }
   }
 
   public contains(p: Point) {
-    return GeographyUtility.contains(this.polygonPoints, p);
+    // return GeographyUtility.contains(this.polygonPoints, p);
   }
 
   /**

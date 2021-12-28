@@ -1,3 +1,5 @@
+
+import { fabric } from "fabric";
 import { App } from "../app";
 import { DOMUtility } from "../utils/dom";
 
@@ -12,34 +14,49 @@ export class GridService {
 
   private drawingStyle: GridDrawingStyle = GridDrawingStyle.CELL_WIDTH;
   private grayScaleGridLineColor: number = 190;
-  private p5: p5;
+  private warehouseCanvas: fabric.Canvas;
 
-  constructor(p5: p5, gridWidthOrCount: number, gridHeightOrCount: number) {
-    this.p5 = p5;
+  constructor(warehouseCanvas, gridWidthOrCount: number, gridHeightOrCount: number) {
+    this.warehouseCanvas = warehouseCanvas;
     this.gridWidthOrCount = gridWidthOrCount;
     this.gridHeightOrCount = gridHeightOrCount;
   }
 
 
+  // https://codepen.io/Ben_Tran/pen/YYYwNL
   public drawGrid() {
-    if (!this.p5) {
-      console.error('p5 instance not set');
+    if (!this.warehouseCanvas) {
+      console.error('warehouseCanvas not set');
       return;
     }
 
-    const canvasGrid = this.p5.createGraphics(DOMUtility.boundingWidth(), (DOMUtility.boundingHeight() - App.InfoBarHeight));
 
-    canvasGrid.background("220");
-
-    for (let x = 0; x < canvasGrid.width; x += this.gridWidthOrCount) {
-      for (let y = 0; y < canvasGrid.height; y += this.gridHeightOrCount) {
-        canvasGrid.stroke("#ededed");
-        canvasGrid.strokeWeight(1);
-        canvasGrid.line(x, 0, x, canvasGrid.height);
-        canvasGrid.line(0, y, canvasGrid.width, y);
-      }
+    for (var i = 0; i < (this.warehouseCanvasEl.width / this.gridWidthOrCount); i++) {
+      this.warehouseCanvas.add(new fabric.Line([i * this.gridHeightOrCount, 0, i * this.gridHeightOrCount, this.warehouseCanvasEl.height], { type: 'line', stroke: '#ccc', selectable: false }));
+      this.warehouseCanvas.add(new fabric.Line([0, i * this.gridWidthOrCount, this.warehouseCanvasEl.width, i * this.gridWidthOrCount], { type: 'line', stroke: '#ccc', selectable: false }))
     }
+  }
 
-    this.p5.image(canvasGrid, 0, 0);
+  protected get warehouseCanvasEl() {
+    return this.warehouseCanvas.getContext().canvas;
+  }
+
+  protected get cellWidth() {
+    return this.warehouseCanvas.width / this.gridWidthOrCount;
+  }
+
+  protected get cellHeight() {
+    return this.warehouseCanvas.height / this.gridHeightOrCount;
+  }
+
+  public snapTo(location) {
+    // subtract offset (to center lines)
+    // divide by grid to get row/column
+    // round to snap to the closest one
+    var cell = Math.round(location / this.cellWidth);
+    // multiply back to grid scale
+    // add offset to center
+    return cell * this.cellWidth;
+
   }
 }

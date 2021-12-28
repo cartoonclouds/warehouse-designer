@@ -1,203 +1,156 @@
-import { Shelf, Hardware } from "../..";
-import { Dimensions, isRack, isShelf, Point, Rectangle } from '../../../hardware-types';
-import GeographyUtility from "../../../utils/geography";
-import MathUtility from "../../../utils/maths";
-import { RectangleUtility } from "../../../utils/shapes";
-import { DrawMode, CreateRack } from '../../../messages/messages';
-import p5 from "p5";
 import { EventAggregator } from "aurelia";
-import MouseUtility from "../../../utils/mouse-service";
-import { App } from "../../../app";
-import { DOMUtility } from "../../../utils/dom";
-import { IInteractable } from "../hardware";
+import { fabric } from "fabric";
+import { HardWareDeselected, HardWareSelected } from '../../../messages/messages';
 
-export interface IRack {
-  type: string;
 
-  name: string;
-  code?: string;
-  dimensions: Dimensions;
-  point: Point;
-  cornerRadius?: number;
-  shelves?: Shelf[];
-}
+export type IRack = Rack | fabric.IRectOptions;
 
-export class Rack extends Hardware implements IRack, IInteractable {
-  public static type = "Rack";
+class RackHardware extends fabric.Rect {
+  public get modelName() {
+    return this.constructor.name.trim();
+  }
 
+  public static get className() {
+    return this.name.trim();
+  }
+};
+
+export class Rack extends RackHardware {
+  public static readonly type: string = "Rack";
   public type = Rack.type;
-  public name: string;
+
+
+  public label: string;
   public code: string;
-  public dimensions: Dimensions;
-  public point: Point;
-  public cornerRadius: number = 6;
-  public shelves: Shelf[] = [];
+  // public shelves: Shelf[] = [];
   public edges = [];
 
-  protected p5: p5;
-  protected selected: boolean = false;
-  protected mouseOver: boolean = false;
+  public selected: boolean = false;
+  public warehouseCanvas: fabric.Canvas;
+  protected readonly eventAggregator: EventAggregator
 
-  constructor(rackDetails?: Partial<Rack>) {
-    super();
+  constructor(rackDetails: Partial<IRack>, warehouseCanvas: fabric.Canvas) {
+    super(Object.assign({
+      type: Rack.type,
+      width: 80,
+      height: 160,
+      fill: '#adb5bd',
+      stroke: '#000',
+      strokeWidth: 2,
+      lockRotation: true,
+      hasControls: false
+    }, rackDetails));
 
-    if (rackDetails) {
-      rackDetails = Object.assign(new Rack(), rackDetails);
+    rackDetails = Object.assign({
+      type: Rack.type,
+      width: 80,
+      height: 160,
+      fill: '#adb5bd',
+      stroke: '#000',
+      strokeWidth: 2,
+      lockRotation: true,
+      hasControls: false
+    }, rackDetails);
 
-      const { name, code, dimensions, point } = rackDetails;
+    Object.assign(this, rackDetails);
 
-      this.name = name;
-      this.code = code;
-      this.dimensions = dimensions;
-      this.point = point;
-    }
+    this.warehouseCanvas = warehouseCanvas;
 
+    this.eventAggregator = new EventAggregator();
+
+    this.attachEvents();
   }
 
 
-  /** EVENT HANDLING FUNCTIONS */
-  /*************************** */
+  protected attachEvents() {
 
-  public draw(p5: p5, drawingMode: DrawMode) {
-    p5.push();
-    p5.rectMode(p5.CENTER);
+    this.on("mouseover", (e: fabric.IEvent<MouseEvent>) => {
+      this.set('strokeWidth', 2);
+      //this.setOpacity(DrawingColours.WHITE, DEFAULT_OPACITY)
+      //required see "When to call setCoords" github page
+      this.setCoords();
+      this._render(this.warehouseCanvas.getContext());
 
+      console.log(`mouseover ${this.label}`);
 
-    if (this.selected) {
-      p5.fill(255, 0, 0)
-    } else {
-      p5.noFill();
-    }
+    });
 
+    this.on("mouseout", (e: fabric.IEvent<MouseEvent>) => {
+      this.set('strokeWidth', 1);
 
-    if (this.mouseOver) {
-      p5.strokeWeight(3);
+      //required see "When to call setCoords" github page
+      this.setCoords();
+      this._render(this.warehouseCanvas.getContext());
 
-      p5.cursor(p5.HAND);
+      console.log(`mouseout ${this.label}`);
 
-      console.log(`Rack > onMouseOver(${this.name})`);
-    } else {
-      p5.strokeWeight(1);
+    });
 
-      p5.cursor(p5.ARROW);
-    }
+    this.on("selected", (e: fabric.IEvent<MouseEvent>) => {
+      if (e.target === this) {
+        this.setSelectedStyles();
 
+        this.selected = !this.selected;
 
-    p5.rect(this.p5Structure.x, this.p5Structure.y, this.p5Structure.width, this.p5Structure.height, this.cornerRadius);
+        this.eventAggregator.publish(new HardWareSelected(this));
 
-    p5.pop();
-    // console.log(`Rack > draw()`);
-  }
-
-  public onMouseClicked(p5: p5, drawingMode: DrawMode) {
-
-    const cursorContains = this.contains(MouseUtility.coords(p5));
-
-    if (cursorContains) {
-      this.selected = !this.selected;
-
-
-      console.log(`Rack > onMouseClicked(${this.name}) > Selected(${this.selected ? "T" : "F"})`);
-    } else {
-      this.selected = false;
-    }
-
-
-    this.draw(p5, drawingMode);
-  }
-
-  public onMouseOver(p5: p5, drawingMode: DrawMode) {
-
-    const cursorContains = this.contains(MouseUtility.coords(p5));
-
-    this.mouseOver = cursorContains;
-
-    if (cursorContains) {
-      console.log(`Rack > onMouseOver(${this.name}) > MouseOver(${this.mouseOver ? "T" : "F"})`);
-    }
-
-    this.draw(p5, drawingMode);
-  }
-
-
-
-
-
-  /** UTIILITY FUNCTIONS */
-  /********************* */
-
-  /**
-   * Returns a new object in a form required to draw the p5 shape.
-   */
-  public get p5Structure() {
-    return Object.assign({}, this.point, this.dimensions);
-  };
-
-
-  /**
-   * Determins if another hardward intersects with this Rack.
-   */
-  public intersects(hardware: Hardware): boolean {
-    if (isRack(hardware) || isShelf(hardware)) {
-      return GeographyUtility.rectangleIntersectsRectangle(this.asRectangle, hardware.asRectangle);
-    } else {
-      new Error(`No typescript user-defined guard is${hardware.modelName} or intersection handler`);
-    }
-  }
-
-  /**
-   * Determines if a point is contained within this Rack.
-   */
-  public contains(p: Point) {
-    return GeographyUtility.contains(this.polygonPoints, p);
-  }
-
-  /**
-   * Returns the four points as an object of type Rectangle.
-   */
-  public get asRectangle(): Rectangle {
-    return RectangleUtility.asRectangle(this.point, this.dimensions);
-  }
-
-  /**
-   * Returns the four points of a rack running counter-clockwise.
-   */
-  public get polygonPoints(): Point[] {
-    return RectangleUtility.getPolygonPoints(this.point, this.dimensions);
-  }
-}
-
-
-export class ShadowRack extends Rack {
-  public static type = "ShadowRack";
-
-  public type = ShadowRack.type;
-  public name: string = "ShadowRack-";
-
-  constructor(rackCount: number) {
-    //@TODO get default sizing from settings
-    super({
-      name: `ShadowRack-${rackCount}`,
-      dimensions: {
-        width: 80,
-        height: 80
+        console.log(`selected ${this.label} ? ${this.selected ? "T" : "F"}`);
       }
+    });
+
+    this.on("deselected", (e: fabric.IEvent<MouseEvent>) => {
+      this.setDeselectedStyles();
+
+      this.selected = false;
+
+      this.eventAggregator.publish(new HardWareDeselected(this));
+
+      console.log(`deselected ${this.label} ? ${this.selected ? "T" : "F"}`);
     });
 
   }
 
-  public draw(p5: p5, drawingMode: DrawMode) {
-    p5.push();
-    p5.rectMode(p5.CENTER);
-
-    const p5Structure = Object.assign({}, {
-      x: p5.mouseX,
-      y: p5.mouseY
-    }, this.dimensions);
-
-    p5.rect(p5Structure.x, p5Structure.y, p5Structure.width, p5Structure.height, this.cornerRadius, this.cornerRadius, this.cornerRadius, this.cornerRadius);
-
-    p5.pop();
+  protected setSelectedStyles() {
+    this.set('fill', '#0d6efd');
+    this.set('strokeWidth', 2);
   }
 
+  protected setDeselectedStyles() {
+    this.set('fill', '#adb5bd');
+    this.set('strokeWidth', 1);
+  }
+
+  public _render(ctx: CanvasRenderingContext2D) {
+    super._render(ctx);
+
+    ctx.font = '14px Helvetica';
+    ctx.fillStyle = '#333';
+    ctx.fillText(this.label, -this.width / 2, -this.height / 2 - 10);
+  }
+
+
+  public initialize(options?: fabric.IObjectOptions): any {
+    options || (options = {});
+
+    super.initialize(options);
+
+    this.set('label', this.label || '');
+  };
+
+  // public toObject() {
+  //   return fabric.util.object.extend(this.callSuper('toObject'), {
+  //     label: this.get('label')
+  //   });
+  // },
+}
+export class ShadowRack extends Rack {
+  public static readonly type: string = "ShadowRack";
+  public type = ShadowRack.type;
+
+  constructor(rackDetails: Partial<Rack>, warehouseCanvas: fabric.Canvas) {
+    super(Object.assign({}, rackDetails, {
+      type: ShadowRack.type,
+      evented: false
+    }), warehouseCanvas);
+  }
 }

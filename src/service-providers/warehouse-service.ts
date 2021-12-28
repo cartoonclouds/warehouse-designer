@@ -2,25 +2,28 @@ import { EventAggregator, IEventAggregator, IDisposable, inject } from "aurelia"
 import { Hardware, Rack } from "../components";
 import { DrawMode, CreateRack, UpdateDrawMode, DeleteRack } from '../messages/messages';
 import { observable } from '@aurelia/runtime';
-import { ShadowRack } from "../components/p5-elements/rack/rack";
-import { Point } from "../hardware-types";
-import MouseUtility from "../utils/mouse-service";
+import { IRack, ShadowRack } from '../components/p5-elements/rack/rack';
+import { Point, isShadowRack, isRack } from '../hardware-types';
+import { fabric } from 'fabric';
+import StateManager from "../utils/state-manager";
 
 @inject()
 export class WarehouseService {
-  private racks: Rack[] = [];
-  private shadowHardware: Hardware;
+  @observable public warehouseCanvas: fabric.Canvas;
 
-  @observable public drawingMode: DrawMode = DrawMode.SELECTION;
+  protected shadowRack: ShadowRack;
+
+  @observable protected drawingMode: DrawMode = DrawMode.SELECTION;
+  protected altKeyPressed: boolean = false;
 
   protected updateDrawModeSubscription: IDisposable;
   protected createRackSubscription: IDisposable;
   protected deleteRackSubscription: IDisposable;
+  protected stateManager: StateManager;
 
   constructor(
     @IEventAggregator protected readonly eventAggregator: EventAggregator
-  ) {
-  }
+  ) { }
 
   public subscribe() {
     this.updateDrawModeSubscription = this.eventAggregator.subscribe(UpdateDrawMode, (message: UpdateDrawMode) => {
@@ -29,10 +32,7 @@ export class WarehouseService {
       console.log(`WarehouseService > Message.UpdateDrawMode(${this.drawingMode})`);
     });
 
-
     this.createRackSubscription = this.eventAggregator.subscribe(CreateRack, (message: CreateRack) => {
-      this.createRack(message.rackDetails);
-
       console.log(`WarehouseService > Message.CreateRack()`);
     });
 
@@ -49,109 +49,70 @@ export class WarehouseService {
     this.deleteRackSubscription.dispose();
   }
 
-  /**
-   * Draws the created hardward.
-   * 
-   * @param p5 
-   * @param drawingMode 
-   */
-  public drawFloor(p5: p5) {
-    this.racks.forEach((rack: Rack) => {
-      rack.draw(p5, this.drawingMode);
-    })
-  }
-
-
-  /**
-   * Triggers hover callback on any hardward.
-   * 
-   * @param p5 
-   * @param drawingMode 
-   */
-  public warehouseHover(p5: p5) {
-    // console.log(`WarehouseService > warehouseHover(${this.drawingMode})`);
+  public drawingModeChanged() {
+    let selectable = true;
 
     switch (this.drawingMode) {
       case DrawMode.ADD_RACK:
-        if (!this.shadowHardware) {
-          this.shadowHardware = new ShadowRack(this.racks.length + 1);
+        selectable = false;
+
+        break;
+
+      case DrawMode.SELECTION:
+      case DrawMode.DELETE_HARDWARE:
+        selectable = true;
+
+        break;
+    }
+
+    this.racks.forEach((targ) => {
+      targ.selectable = selectable;
+    });
+  }
+
+  public setWarehouseCanvas(warehouseCanvas) {
+    this.warehouseCanvas = warehouseCanvas;
+
+    this.warehouseCanvas.on('mouse:down', (options) => {
+      this.onMouseDown(options);
+    });
+
+    this.warehouseCanvas.on('mouse:move', (options) => {
+      this.onMouseMove(options);
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (isRack(e.target)) {
+        switch (e.code) {
+          case "Delete":
+            this.deleteRack(e.target);
+            break;
         }
+      }
+    });
 
-        this.shadowHardware.draw(p5, this.drawingMode);
-
-        break;
-
-      case DrawMode.SELECTION:
-      case DrawMode.DELETE_HARDWARE:
-        break;
-
-      default:
-        console.error(`Unhandled WarehouseService.warehouseHover() drawing mode ${this.drawingMode}`);
-    }
+    this.stateManager = new StateManager(this.warehouseCanvas);
   }
 
-
-  /**
-   * Triggers the mouse click event on created hardware.
-   * @param p5 
-   * @param drawingMode 
-   */
-  public onMouseClicked(p5: p5, event) {
-    console.log(`WarehouseService > onMouseClicked(${this.drawingMode})`);
+  public onMouseMove(options: fabric.IEvent<MouseEvent>) {
+    this.warehouseCanvas.setCursor(this.warehouseCanvas.defaultCursor);
 
     switch (this.drawingMode) {
       case DrawMode.ADD_RACK:
-        const newRackPoint = { x: p5.mouseX, y: p5.mouseY };
-        //@TODO get default sizing from settings
-        const newRackDimensions = {
-          width: 80,
-          height: 80
-        };
+        this.warehouseCanvas.setCursor(this.warehouseCanvas.moveCursor);
 
-        this.eventAggregator.publish(new CreateRack({ name: `Rack-${this.racks.length + 1}`, point: newRackPoint, dimensions: newRackDimensions }));
+        this.drawShadowRack(options);
 
         break;
 
       case DrawMode.SELECTION:
-        this.racks.forEach((rack: Rack) => {
-          rack.onMouseClicked(p5, this.drawingMode);
-        });
-
-        break;
-
       case DrawMode.DELETE_HARDWARE:
-        const rackIdx = this.findHardwardIndexAt(MouseUtility.coords(p5));
+        this.warehouseCanvas.setCursor(this.warehouseCanvas.hoverCursor);
 
-        this.eventAggregator.publish(new DeleteRack(rackIdx));
-
-        break;
-
-      default:
-        console.error(`Unhandled WarehouseService.onMouseClicked() drawing mode ${this.drawingMode}`);
-    }
-
-    p5.redraw();
-  }
-
-
-
-  /**
-   * Triggers the mouse over event on created hardware.
-   * @param p5 
-   * @param drawingMode 
-   */
-  public onMouseOver(p5: p5, event) {
-    // console.log(`WarehouseService > onMouseOver(${this.drawingMode})`);
-
-    switch (this.drawingMode) {
-      case DrawMode.ADD_RACK:
-        break;
-
-      case DrawMode.SELECTION:
-      case DrawMode.DELETE_HARDWARE:
-        this.racks.forEach((rack: Rack) => {
-          rack.onMouseOver(p5, this.drawingMode);
-        });
+        if (this.shadowRack) {
+          this.deleteRack(this.shadowRack);
+          this.shadowRack = null;
+        }
 
         break;
 
@@ -159,87 +120,190 @@ export class WarehouseService {
         console.error(`Unhandled WarehouseService.onMouseOver() drawing mode ${this.drawingMode}`);
     }
 
-    p5.draw();
+    this.warehouseCanvas.requestRenderAll();
   }
 
 
-  protected selectKeyPressed: boolean = false;
-  public onKeyPressed(p5: p5) {
+  public onMouseDown(options: fabric.IEvent<MouseEvent>) {
+    switch (this.drawingMode) {
+      case DrawMode.ADD_RACK:
+        console.log(options.currentSubTargets);
+        if (options.target && options.subTargets.length && this.shadowRack.intersectsWithObject(options.subTargets[0])) {
+          //cannot create rack on top on another
+          this.shadowRack.bringToFront();
 
-    this.selectKeyPressed = this.selectKeyPressed || p5.key == "Shift";
+          console.log(`Intersectiong object`, options.subTargets[0]);
+        }
 
+        this.createRack(this.shadowRack);
 
-    console.log(`WarehouseService > onKeyPressed(${p5.key})`);
-  }
+        break;
 
-  public onKeyRelease(p5: p5) {
+      case DrawMode.SELECTION:
+        break;
 
-    if (!this.selectKeyPressed) {
-      return;
+      case DrawMode.DELETE_HARDWARE:
+        this.deleteRack(options.target as Rack);
+
+        break;
+
+      default:
+        console.error(`Unhandled WarehouseService.onMouseOver() drawing mode ${this.drawingMode}`);
     }
 
-    switch (p5.key) {
-      case "R":
-      case "r":
-
-        this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
-
-        break;
-
-      case "H":
-      case "h":
-
-        this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_SHELF));
-
-        break;
-
-      case "S":
-      case 's':
-
-        this.eventAggregator.publish(new UpdateDrawMode(DrawMode.SELECTION));
-
-        break;
-
-      case "D":
-      case 'd':
-
-        this.eventAggregator.publish(new UpdateDrawMode(DrawMode.DELETE_HARDWARE));
-
-        break;
-    }
-
-    this.selectKeyPressed = false;
-
-
-    console.log(`WarehouseService > onKeyRelease(${p5.key})`);
+    this.warehouseCanvas.requestRenderAll();
   }
 
+  protected get warehouseCanvasEl() {
+    return this.warehouseCanvas.getContext().canvas;
+  }
 
-  public findHardwardIndexAt(point: Point) {
-    return this.racks.findIndex((rack: Rack) => {
-      return rack.contains(point);
-    });
+  public get racks() {
+    return this.warehouseCanvas?.getObjects("Rack") || [];
   }
 
   /**
    * Adds a rack to the list of created racks.
    * @param rackDetails 
    */
-  public createRack(rackDetails?: Partial<Rack>) {
-    const newRack = new Rack(rackDetails);
+  public createRack(rackDetails?: Partial<IRack>) {
+    const newRack = new Rack({
+      label: `Rack-${this.racks.length + 1}`,
+      type: Rack.type,
+      left: rackDetails.left,
+      top: rackDetails.top
+    }, this.warehouseCanvas);
 
-    this.racks.push(newRack);
-    this.shadowHardware = null;
+    this.warehouseCanvas.add(newRack);
 
-    console.log(`WarehouseService > addRack(${newRack.name})`);
+    // this.drawingModeChanged();
+
+    console.log(`Rack count #${this.racks.length}`, this.racks);
+
+    console.log(`WarehouseService > addRack(${newRack.label})`);
   }
 
 
-  public deleteRack(rackIdx: number) {
-    if (rackIdx < 0) { return; }
+  public deleteRack(deleteRack: Rack) {
+    console.log(`WarehouseService > deleteRack(${deleteRack.label})`);
 
-    this.racks.splice(rackIdx, 1);
-
-    console.log(`WarehouseService > deleteRack(${rackIdx})`);
+    this.warehouseCanvas.remove(deleteRack);
   }
+
+  protected drawShadowRack(options: fabric.IEvent<MouseEvent>) {
+    const mousePosition = this.warehouseCanvas.getPointer(options.e);
+
+    if (!this.shadowRack) {
+      this.shadowRack = new ShadowRack({
+        label: `ShadowRack`
+      }, this.warehouseCanvas);
+
+      this.warehouseCanvas.add(this.shadowRack);
+    }
+
+    let constrainedX = Math.max(0, mousePosition.x - (this.shadowRack.width / 2));
+    constrainedX = Math.min(constrainedX, this.warehouseCanvasEl.width - this.shadowRack.width)
+
+    let constrainedY = Math.max(0, mousePosition.y - (this.shadowRack.height / 2));
+    constrainedY = Math.min(constrainedY, this.warehouseCanvasEl.height - this.shadowRack.height)
+
+    this.shadowRack.set('left', constrainedX);
+    this.shadowRack.set('top', constrainedY);
+
+    this.shadowRack.bringToFront();
+
+    // if (options.target && this.shadowRack.intersectsWithObject(options.target, false, true)) {
+    //   //cannot create rack on top on another
+    //   this.warehouseCanvas.setCursor(this.warehouseCanvas.notAllowedCursor);
+    // } else {
+    //   this.warehouseCanvas.setCursor(this.warehouseCanvas.defaultCursor);
+    // }
+
+    this.shadowRack.setCoords();
+  }
+
+  // public onKeyPressed() {
+  //   this.altKeyPressed = this.altKeyPressed || WarehouseService.p5.key == "Alt";
+
+
+  //   console.log(`WarehouseService > onKeyPressed(${WarehouseService.p5.key})`);
+  // }
+
+  // public onKeyRelease() {
+
+  //   if (!this.altKeyPressed) {
+  //     return;
+  //   }
+
+  //   switch (WarehouseService.p5.key) {
+  //     case "R":
+  //     case "r":
+
+  //       this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
+
+  //       break;
+
+  //     case "H":
+  //     case "h":
+
+  //       this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_SHELF));
+
+  //       break;
+
+  //     case "S":
+  //     case 's':
+
+  //       this.eventAggregator.publish(new UpdateDrawMode(DrawMode.SELECTION));
+
+  //       break;
+
+  //     case "D":
+  //     case 'd':
+
+  //       this.eventAggregator.publish(new UpdateDrawMode(DrawMode.DELETE_HARDWARE));
+
+  //       break;
+  //   }
+
+  //   this.altKeyPressed = false;
+
+
+  //   console.log(`WarehouseService > onKeyRelease(${WarehouseService.p5.key})`);
+  // }
+
+  // protected get mouseCoords() {
+  //   return MouseUtility.coords(WarehouseService.p5);
+  // }
+
+
+  // public checkShadowHardwardIntersecting() {
+  //   this.shadowRack.isIntersected = false;
+
+  //   this.racks.forEach((rack: Rack) => {
+  //     rack.isIntersected = false;
+
+  //     if (rack.intersects(this.shadowRack)) {
+  //       let isIntersecting = this.shadowRack.intersects(rack);
+
+  //       this.shadowRack.isIntersected = isIntersecting;
+  //       rack.isIntersected = isIntersecting;
+
+  //       if (isIntersecting) {
+  //         console.log(`${this.shadowRack.label} intersects with ${rack.label}`)
+  //       }
+  //     }
+  //   });
+
+  // }
+
+
+  // public getHardwareAtCursor() {
+  //   for (const rack of this.racks) {
+  //     if (rack.contains(this.mouseCoords)) {
+  //       return rack;
+  //     }
+  //   }
+  //   return null;
+  // }
+
 }

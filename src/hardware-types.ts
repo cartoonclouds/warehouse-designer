@@ -1,4 +1,5 @@
-import { Hardware, Rack, Shelf } from "./components";
+import { Hardware, Rack } from "./components";
+import { ShadowRack } from "./components/p5-elements/rack/rack";
 
 export type Dimensions = {
   width: number;
@@ -30,6 +31,10 @@ export function isRack(rack): rack is Rack {
   return (rack as Rack)?.modelName === "Rack" ? true : false;
 }
 
-export function isShelf(shelf): shelf is Shelf {
-  return (shelf as Shelf)?.modelName === "Shelf" ? true : false;
+export function isShadowRack(rack): rack is ShadowRack {
+  return (rack as ShadowRack)?.modelName === "ShadowRack" ? true : false;
 }
+
+// export function isShelf(shelf): shelf is Shelf {
+//   return (shelf as Shelf)?.modelName === "Shelf" ? true : false;
+// }
