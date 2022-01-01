@@ -1,9 +1,11 @@
-import { EventAggregator, IEventAggregator, inject } from "aurelia";
+import { EventAggregator, IDisposable, IEventAggregator, inject } from "aurelia";
 
 import { GridService } from "./service-providers/grid-service";
 import { WarehouseCanvas } from './utils/warehouse-canvas';
-import { DrawMode, UpdateDrawMode } from './messages/messages';
+import { DrawMode, UpdateDrawMode, HardwareSelected, HardwareDeselected } from './messages/messages';
 import { DOMUtility } from './utils/dom';
+import { Rack } from "./components";
+import { observable } from '@aurelia/runtime';
 
 @inject()
 export class App {
@@ -13,18 +15,45 @@ export class App {
   protected gridService: GridService;
   protected warehouseCanvas: WarehouseCanvas
 
+  protected hardwareDeselectedSubscription: IDisposable;
+  protected hardwareSelectedSubscription: IDisposable;
+
+  @observable public selectedHardware: Rack;
+
   constructor(
     protected readonly element: HTMLElement,
     @IEventAggregator protected readonly eventAggregator: EventAggregator
   ) {
   }
 
+  public get selected() {
+    return {
+      model: this.selectedHardware,
+      viewModel: Rack
+    }
+  }
+
 
   public unbinding() {
     this.warehouseCanvas.unsubscribe();
+    this.hardwareSelectedSubscription.dispose();
+    this.hardwareDeselectedSubscription.dispose();
   }
 
+
   public attached() {
+    this.hardwareSelectedSubscription = this.eventAggregator.subscribe(HardwareSelected, (message: HardwareSelected) => {
+      this.selectedHardware = message.rack;
+
+      console.log(`App > HardwareSelected`, this.selectedHardware);
+    });
+
+
+    this.hardwareDeselectedSubscription = this.eventAggregator.subscribe(HardwareDeselected, (message: HardwareDeselected) => {
+      this.selectedHardware = null;
+    });
+
+
     // create fabric canvas instance
     this.warehouseCanvas = new WarehouseCanvas({
       element: "floor",
@@ -37,10 +66,11 @@ export class App {
 
     // create grid instance
     this.gridService = new GridService(this.warehouseCanvas, 40, 40);
+    this.warehouseCanvas.setGridService(this.gridService);
     this.gridService.drawGrid();
 
     // set initial draw mode as SELECTION
-    this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
+    // this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
   }
 
   public detached() {

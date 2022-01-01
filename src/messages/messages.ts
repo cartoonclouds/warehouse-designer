@@ -1,5 +1,5 @@
 
-import { Rack } from "../components/p5-elements/rack/rack";
+import { Rack } from "../components/hardware/rack/rack";
 import { Dimensions, Point } from "../hardware-types";
 
 export enum DrawMode {
@@ -20,15 +20,6 @@ export class UpdateDrawMode {
   }
 }
 
-export class CreateRack {
-  public rackDetails: Partial<Rack>;
-
-  constructor(rackDetails?: Partial<Rack>) {
-    this.rackDetails = rackDetails;
-  }
-
-}
-
 
 export class DeleteRack {
   public rack: Rack;
@@ -39,7 +30,7 @@ export class DeleteRack {
 }
 
 
-export class HardWareSelected {
+export class HardwareSelected {
   public rack: Rack;
 
   constructor(rack: Rack) {
@@ -47,10 +38,10 @@ export class HardWareSelected {
   }
 }
 
-export class HardWareDeselected {
-  public rack: Rack;
+export class HardwareDeselected {
+  public rack?: Rack;
 
-  constructor(rack: Rack) {
+  constructor(rack?: Rack) {
     this.rack = rack;
   }
 }

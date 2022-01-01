@@ -10,10 +10,9 @@ export class Shelf {
   public dimensions: Dimensions;
   public point: Point;
 
-  protected p5: p5;
   protected selected: boolean = false;
 
-  constructor(p5: p5, shelfDetails?: Partial<Shelf>) {
+  constructor() {
     // super();
     /*
         //@TODO get default sizing

@@ -22,7 +22,7 @@ module.exports = function (env, { analyze }) {
   return {
     target: "web",
     mode: production ? "production" : "development",
-    devtool: production ? undefined : "eval-cheap-source-map",
+    devtool: production ? undefined : "inline-source-map",
     entry: {
       entry: "./src/main.ts",
     },
@@ -76,7 +76,10 @@ module.exports = function (env, { analyze }) {
     },
     plugins: [
       new MiniCssExtractPlugin(),
-      new HtmlWebpackPlugin({ template: "index.html" }),
+      new HtmlWebpackPlugin({
+        template: "index.html",
+        metadata: { dev: mode !== "production" },
+      }),
       new Dotenv({
         path: `./.env${
           production ? "" : "." + (process.env.NODE_ENV || "development")

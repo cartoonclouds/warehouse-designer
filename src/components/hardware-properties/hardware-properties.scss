@@ -1,0 +1,39 @@
+$spacing: 10px;
+
+hardware-properties {
+  position: absolute;
+  width: 300px;
+  background-color: #fff;
+  z-index: 1;
+  border: 1px solid #9f9f9f;
+  margin: $spacing;
+  font-size: 14px;
+  padding: $spacing;
+
+  *:focus {
+    outline: 0 !important;
+    box-shadow: none !important;
+  }
+
+  fieldset {
+    border: 1px solid #ddd;
+    margin: $spacing 0;
+    padding: calc($spacing / 2);
+    background-color: #f3f3f3;
+
+    legend {
+      float: unset;
+      width: unset;
+      padding: unset;
+      margin-bottom: unset;
+      font-size: unset;
+    }
+
+    label.form-label {
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      color: #878787;
+    }
+  }
+}

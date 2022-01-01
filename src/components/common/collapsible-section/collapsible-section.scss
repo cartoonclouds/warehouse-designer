@@ -1,0 +1,20 @@
+collapsible-section {
+  display: block;
+  border: 1px solid #ddd;
+  margin: 10px 0;
+  padding: 5px;
+  background-color: #f3f3f3;
+
+  .section-header {
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    color: #878787;
+    text-decoration: none;
+    display: block;
+  }
+
+  .indicator {
+    font-size: 0.8em;
+  }
+}

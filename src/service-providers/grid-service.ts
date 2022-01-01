@@ -39,10 +39,10 @@ export class GridService {
   }
 
   protected get properties() {
-    return { 
-      type: 'line', 
-      stroke: '#ccc', 
-      selectable: false 
+    return {
+      type: 'line',
+      stroke: '#ccc',
+      selectable: false
     };
   }
 
@@ -58,14 +58,30 @@ export class GridService {
     return this.warehouseCanvas.height / this.gridHeightOrCount;
   }
 
-  public snapTo(location) {
+  public snapXTo(xPoint) {
+
+    // return Math.round(leftXPoint / this.cellWidth) % this.cellWidth == 0 ? LeftPoint : xPoint;
+
+
     // subtract offset (to center lines)
     // divide by grid to get row/column
     // round to snap to the closest one
-    var cell = Math.round(location / this.cellWidth);
+    var cell = Math.round((xPoint - 20) / this.cellWidth);
     // multiply back to grid scale
     // add offset to center
-    return cell * this.cellWidth;
+    return (cell * this.cellWidth) + 20;
 
   }
+
+  public snapYTo(yPoiny) {
+    // subtract offset (to center lines)
+    // divide by grid to get row/column
+    // round to snap to the closest one
+    var cell = Math.round((yPoiny - 20) / this.cellHeight);
+    // multiply back to grid scale
+    // add offset to center
+    return cell * this.cellHeight + 20;
+
+  }
+
 }
