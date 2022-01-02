@@ -1,15 +1,16 @@
 <a class="section-header" data-bs-toggle="collapse" href="#${collapsibleName}" role="button" aria-expanded="false"
   aria-controls="${collapsibleName}">
 
-  <template if.bind="isOpen">
+  <span if.bind="visible">
     <i class="fas fa-chevron-down indicator"></i>
-  </template>
-  <template if.bind="!isOpen">
+  </span>
+  <span if.bind="!visible">
     <i class="fas fa-chevron-right indicator"></i>
-  </template>
+  </span>
 
   <au-slot name="heading"></au-slot>
 </a>
+
 <div class="collapse" id="${collapsibleName}">
   <au-slot name="content"></au-slot>
 </div>

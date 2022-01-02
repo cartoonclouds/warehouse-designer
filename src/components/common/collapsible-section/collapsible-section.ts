@@ -4,17 +4,15 @@ const bootstrap = require("bootstrap");
 
 @inject()
 export class CollapsibleSection {
-  @bindable({ mode: BindingMode.oneTime }) name: string;
-  @bindable({ mode: BindingMode.twoWay }) visible: boolean;
+  public static collapsibleSectionCount = 0;
 
-  public isOpen: boolean = false;
+  @bindable({ mode: BindingMode.oneTime }) name: string;
+  @bindable({ mode: BindingMode.twoWay }) visible: boolean = false;
 
   private bsCollapse;
 
-  constructor(protected readonly element: HTMLElement) { }
-
-  public binding() {
-    this.isOpen = this.visible;
+  constructor(protected readonly element: HTMLElement) {
+    CollapsibleSection.collapsibleSectionCount++;
   }
 
   public attached() {
@@ -22,12 +20,12 @@ export class CollapsibleSection {
       show: this.visible
     })
 
-    this.collapsible.addEventListener("show.bs.collapse", e => {
-      this.isOpen = true;
+    this.collapsible.addEventListener("shown.bs.collapse", e => {
+      this.visible = true;
     });
 
-    this.collapsible.addEventListener("hide.bs.collapse", e => {
-      this.isOpen = false;
+    this.collapsible.addEventListener("hidden.bs.collapse", e => {
+      this.visible = false;
     });
   }
 
@@ -37,7 +35,7 @@ export class CollapsibleSection {
   }
 
   public get collapsibleName() {
-    return `collapse-${this.name}`;
+    return `collapse-${this.name}-${CollapsibleSection.collapsibleSectionCount}`;
   }
 
   public get collapsible() {

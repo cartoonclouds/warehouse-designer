@@ -1,7 +1,10 @@
 <menu-bar></menu-bar>
 <main>
-  <hardware-properties if.bind="selectedHardware" view-model.bind="selected.model" model.bind="selected.viewModel">
+  <hardware-properties if.bind="selectedHardware" model.bind="selected.model" view-model.bind="selected.viewModel">
   </hardware-properties>
+
   <floor></floor>
+
+  <debug-properties if.bind="selectedHardware" model.bind="selected.viewModel"></debug-properties>
 </main>
 <status-bar></status-bar>

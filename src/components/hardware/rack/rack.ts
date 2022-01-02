@@ -1,4 +1,4 @@
-import Aurelia, { DI, EventAggregator, IAurelia } from "aurelia";
+import Aurelia, { DI, EventAggregator, IAurelia, IEventAggregator } from "aurelia";
 import { fabric } from "fabric";
 import { HardwareDeselected, HardwareSelected } from '../../../messages/messages';
 import FabricJSUtil from '../../../utils/fabricjs';
@@ -9,6 +9,17 @@ import { IObjectOptions } from "fabric/fabric-impl";
 
 export type IRack = Rack | fabric.IRectOptions;
 
+export class HardwareEvent {
+  dateTime: Date;
+  domEvent: string;
+  message: string;
+
+  constructor(params) {
+    this.dateTime = new Date();
+    this.domEvent = params.domEvent;
+    this.message = params.message;
+  }
+}
 class RackHardware extends fabric.Rect {
   public get modelName() {
     return this.constructor.name.trim();
@@ -17,9 +28,13 @@ class RackHardware extends fabric.Rect {
   public static get className() {
     return this.name.trim();
   }
+
+  @observable public events: HardwareEvent[] = [];
+
 };
 
 @observable({ name: 'label', callback: 'observableUpdated' })
+@observable({ name: 'code', callback: 'observableUpdated' })
 export class Rack extends RackHardware {
   public static readonly type: string = "Rack";
 
@@ -89,7 +104,10 @@ export class Rack extends RackHardware {
 
       this._render(this.warehouseCanvas.getContext());
 
-      console.log(`mouseup ${this.label}`);
+
+      this.events.push(new HardwareEvent({
+        domEvent: "mouseup"
+      }))
     });
 
     this.on("mouseover", (e: fabric.IEvent<MouseEvent>) => {
@@ -97,7 +115,10 @@ export class Rack extends RackHardware {
 
       this._render(this.warehouseCanvas.getContext());
 
-      console.log(`mouseover ${this.label}`);
+
+      this.events.push(new HardwareEvent({
+        domEvent: "mouseover"
+      }));
     });
 
     this.on("mouseout", (e: fabric.IEvent<MouseEvent>) => {
@@ -105,8 +126,9 @@ export class Rack extends RackHardware {
 
       this._render(this.warehouseCanvas.getContext());
 
-      console.log(`mouseout ${this.label}`);
-
+      this.events.push(new HardwareEvent({
+        domEvent: "mouseup"
+      }));
     });
 
     this.on("selected", (e: fabric.IEvent<MouseEvent>) => {
@@ -119,7 +141,9 @@ export class Rack extends RackHardware {
 
       this.eventAggregator.publish(new HardwareSelected(this));
 
-      console.log(`selected ${this.label}`);
+      this.events.push(new HardwareEvent({
+        domEvent: "selected"
+      }));
     });
 
     this.on("deselected", (e: fabric.IEvent<MouseEvent>) => {
@@ -127,7 +151,10 @@ export class Rack extends RackHardware {
 
       this.eventAggregator.publish(new HardwareDeselected(this));
 
-      console.log(`deselected ${this.label} `);
+
+      this.events.push(new HardwareEvent({
+        domEvent: "deselected"
+      }));
     });
 
 
@@ -140,7 +167,10 @@ export class Rack extends RackHardware {
 
       this.warehouseCanvas.setCursor(this.moveCursor);
 
-      console.log(`moving ${this.label}`);
+
+      this.events.push(new HardwareEvent({
+        domEvent: "moving"
+      }));
     });
   }
 
@@ -281,6 +311,8 @@ export class ShadowRack extends Rack {
 
     constrainedX = Math.min(constrainedX, this.warehouseCanvas.width - this.width)
 
+    constrainedX = Math.round(constrainedX / 40) * 40;
+
     return constrainedX;
   }
 
@@ -288,6 +320,8 @@ export class ShadowRack extends Rack {
     let constrainedY = Math.max(0, yPoint - (this.height / 2));
 
     constrainedY = Math.min(constrainedY, this.warehouseCanvas.height - this.height);
+
+    constrainedY = Math.round(constrainedY / 40) * 40;
 
     return constrainedY;
   }

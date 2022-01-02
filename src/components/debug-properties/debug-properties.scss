@@ -1,0 +1,33 @@
+$spacing: 10px;
+
+debug-properties {
+  position: absolute;
+  background-color: #fff;
+  z-index: 1;
+  border: 1px solid #9f9f9f;
+  margin: $spacing;
+  padding: $spacing;
+  top: 60px;
+  width: 300px;
+  right: $spacing;
+  font-size: 12px;
+
+  h5 {
+    font-size: 16px;
+    border-bottom: 1px solid #9f9f9f;
+    margin-bottom: 0;
+  }
+
+  table {
+    margin: 0.5rem 0;
+
+    textarea {
+      width: 100%;
+      height: 150px;
+    }
+
+    .property-name {
+      font-weight: bold;
+    }
+  }
+}

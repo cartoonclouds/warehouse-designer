@@ -28,8 +28,8 @@ export class App {
 
   public get selected() {
     return {
-      model: this.selectedHardware,
-      viewModel: Rack
+      viewModel: this.selectedHardware,
+      model: Rack
     }
   }
 

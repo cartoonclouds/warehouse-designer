@@ -1,0 +1,39 @@
+<require from="./debug-properties.scss"></require>
+
+<h5>${model.label} Properties</h5>
+
+<table class="table">
+  <tbody>
+
+    <tr>
+      <td class="property-name">Type</td>
+      <td>${model.type}</td>
+    </tr>
+
+    <tr>
+      <td class="property-name">Left</td>
+      <td>${model.left}</td>
+    </tr>
+
+    <tr>
+      <td class="property-name">Top</td>
+      <td>${model.top}</td>
+    </tr>
+
+    <tr>
+      <td class="property-name">Width / Height</td>
+      <td>${model.width} / ${model.height}</td>
+    </tr>
+
+
+    <tr>
+      <td colspan="2" class="property-name">Events</td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <textarea value.bind="formattedEvents"></textarea>
+      </td>
+    </tr>
+
+  </tbody>
+</table>

@@ -8,3 +8,4 @@ export { ToggleButtonGroup } from "./common/toggle-button-group/toggle-button-gr
 export { ButtonGroup } from "./common/button-group/button-group";
 export { CollapsibleSection } from "./common/collapsible-section/collapsible-section";
 export { HardwareProperties } from "./hardware-properties/hardware-properties";
+export { DebugProperties } from "./debug-properties/debug-properties";

@@ -18,3 +18,7 @@ collapsible-section {
     font-size: 0.8em;
   }
 }
+
+collapsible-section:last-of-type {
+  margin-bottom: 0;
+}
