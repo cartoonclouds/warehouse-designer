@@ -1,5 +1,6 @@
 import { IObjectOptions } from "fabric/fabric-impl";
-import { IRack } from "./rack/rack";
+import { IRack, IShadowRack } from "./rack/rack";
+import { IShelf } from './shelf/shelf';
 
 export class HardwareEvent {
   dateTime: Date;
@@ -11,9 +12,19 @@ export class HardwareEvent {
     this.domEvent = params.domEvent;
     this.message = params.message;
   }
-}
+};
 
-export type Hardware = IRack;
+export enum HardwareType {
+  RACK,
+  SHELF
+};
+
+export interface Drawable {
+  draw(options: fabric.IEvent<MouseEvent>);
+};
+
+export type Hardware = IRack | IShelf;
+export type ShadowHardware = IShadowRack;
 
 export interface IHardware {
   modelName: string;
@@ -27,4 +38,4 @@ export interface IHardware {
   // ellipsis
   // let d = dist(this.x, this.y, otherHardware.x, otherHardware.y);
   // return d < this.r + otherHardware.r;
-}
+};

@@ -2,14 +2,15 @@ import { EventAggregator, IEventAggregator, IDisposable, inject } from "aurelia"
 import { observable } from '@aurelia/runtime';
 import { fabric } from 'fabric';
 import { isRack } from "../../hardware-types";
-import { DrawMode, HardwareSelected, UpdateDrawMode, DeleteRack } from "../../messages/messages";
+import { DrawMode, HardwareSelected, UpdateDrawMode, DeleteHardware } from '../../messages/messages';
 import { GridService } from "../../service-providers/grid-service";
 import { DOMUtility } from "../../utils/dom";
 import { App } from "../../app";
 import { SelectionDrawingMode } from './drawing-modes/selection-mode';
-import { AddRackDrawingMode, _AddRackDrawingMode } from "./drawing-modes/add-rack-mode";
+import { AddHardwareDrawingMode, _AddHardwareDrawingMode } from "./drawing-modes/add-hardware-mode";
 import { DeleteHardwareDrawingMode } from "./drawing-modes/delete-hardware-mode";
 import FloorSeeder from "../../utils/floor-seeder";
+import { HardwareType } from "../hardware/hardware";
 
 @inject()
 export class WarehouseFloor {
@@ -64,9 +65,7 @@ export class WarehouseFloor {
 
     switch (this.drawingMode) {
       case DrawMode.ADD_RACK:
-        this.drawingModeHandler = AddRackDrawingMode.getInstance(this.canvas, this.gridService, this.eventAggregator);
-        // this.drawingModeHandler = new _AddRackDrawingMode(this.canvas, this.gridService, this.eventAggregator);
-
+        this.drawingModeHandler = AddHardwareDrawingMode.getInstance(this.canvas, this.gridService, this.eventAggregator);
         break;
 
       case DrawMode.SELECTION:
@@ -92,8 +91,8 @@ export class WarehouseFloor {
       this.eventAggregator.subscribe(UpdateDrawMode, (message: UpdateDrawMode) => {
         this.drawingMode = message.mode;
       }),
-      this.eventAggregator.subscribe(DeleteRack, (message: DeleteRack) => {
-        this.drawingModeHandler.deleteRack(message.rack);
+      this.eventAggregator.subscribe(DeleteHardware, (message: DeleteHardware) => {
+        this.drawingModeHandler.deleteHardware(message.hardware);
       })
     );
   }
@@ -136,7 +135,7 @@ export class WarehouseFloor {
     switch (keyboardEvent.code) {
       case "Delete":
         if (isRack(selectedHardware)) {
-          this.drawingModeHandler.deleteRack(selectedHardware);
+          this.drawingModeHandler.DeleteHardware(selectedHardware);
         }
         break;
 
@@ -155,17 +154,10 @@ export class WarehouseFloor {
 
       case "KeyR":
         this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
-
-        break;
-
-      case "KeyH":
-        this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_SHELF));
-
         break;
 
       case "KeyS":
         this.eventAggregator.publish(new UpdateDrawMode(DrawMode.SELECTION));
-
         break;
     }
 

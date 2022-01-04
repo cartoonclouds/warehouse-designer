@@ -3,6 +3,8 @@
 
 import { isPoint, Point, Rectangle } from '../hardware-types';
 
+type RectangleCoords = [fabric.Point, fabric.Point, fabric.Point, fabric.Point];
+
 export default class GeographyUtilities {
 
   public static contains(polygonPoints: Point[], p: number | Point, py?: number) {

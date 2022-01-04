@@ -16,6 +16,22 @@ export class RectangleUtility implements Rectangle {
     return (new RectangleUtility(point, dimensions)).asRectangleType;
   }
 
+
+  /**
+   * Returns the four points as an object of type Rectangle.
+   */
+  public static asRectangleByPoints(topLeft: Point, topRight: Point, bottomRight: Point, bottomLeft: Point): Rectangle {
+    const point = topLeft;
+
+    const dimensions = {
+      width: (topRight.x - topLeft.x),
+      height: (topLeft.y - bottomLeft.y)
+    }
+
+    return (new RectangleUtility(point, dimensions)).asRectangleType;
+  }
+
+
   /**
    * Returns the four points of a rack running counter-clockwise.
    */

@@ -58,3 +58,14 @@ export default class FabricJSUtil {
   ];
 
 }
+
+export class FabricUtility {
+  public static rectIntersectsRect(rect1: fabric.Rect, rect2: fabric.Rect) {
+    const rackCoords = rect1.getCoords(true, true);
+
+    return rect2.containsPoint(rackCoords[0].scalarSubtract(1))
+      || rect2.containsPoint(rackCoords[1].scalarSubtract(1))
+      || rect2.containsPoint(rackCoords[2].scalarSubtract(1))
+      || rect2.containsPoint(rackCoords[3].scalarSubtract(1));
+  }
+}

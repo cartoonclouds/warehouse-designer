@@ -19,25 +19,13 @@ export class MenuBar {
             }
         }),
         new ToggleButton({
-            icon: "far fa-pallet",
+            icon: "",
             text: "Add New Rack",
             drawMode: DrawMode.ADD_RACK,
             clickAction: () => {
                 this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
 
                 console.log(`MenuBar > ToggleButton > clickAction(${DrawMode.ADD_RACK})`);
-
-                return true;
-            }
-        }),
-        new ToggleButton({
-            icon: "far fa-inventory",
-            text: "Add New Shelf",
-            drawMode: DrawMode.ADD_SHELF,
-            clickAction: () => {
-                this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_SHELF));
-
-                console.log(`MenuBar > ToggleButton > clickAction(${DrawMode.ADD_SHELF})`);
 
                 return true;
             }

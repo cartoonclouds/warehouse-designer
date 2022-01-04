@@ -6,7 +6,6 @@ import { Dimensions, Point } from "../hardware-types";
 export enum DrawMode {
   SELECTION = "selection",
   ADD_RACK = "add-rack",
-  ADD_SHELF = "add-shelf",
   DELETE_HARDWARE = "delete-hardware",
 
   REDO = "redo",
@@ -23,11 +22,11 @@ export class UpdateDrawMode {
   }
 }
 
-export class DeleteRack {
-  public rack: Rack;
+export class DeleteHardware {
+  public hardware: Hardware;
 
-  constructor(rack: Rack) {
-    this.rack = rack;
+  constructor(hardware: Hardware) {
+    this.hardware = hardware;
   }
 }
 

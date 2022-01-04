@@ -4,6 +4,7 @@ import { HardwareDeselected } from "../../../messages/messages";
 import { GridService } from "../../../service-providers/grid-service";
 import { Hardware } from "../../hardware/hardware";
 import { IRack } from "../../hardware/rack/rack";
+import { IShelf, Shelf } from "../../hardware/shelf/shelf";
 
 export abstract class DrawingModeBase {
   protected readonly canvas: fabric.Canvas;
@@ -28,6 +29,20 @@ export abstract class DrawingModeBase {
   public racksExcept(rack: Rack) {
     return this.racks.filter((r: Rack) => r !== rack);
   }
+
+  public get hardwares() {
+    const hardwares = [];
+
+    hardwares.push(...(this.canvas?.getObjects("Rack") || []));
+    hardwares.push(...(this.canvas?.getObjects("Shelf") || []));
+
+    return hardwares;
+  }
+
+  public hardwareExcept(hardware: Hardware) {
+    return this.hardwares.filter((h: Hardware) => h !== hardware);
+  }
+
 
   public get DOMCanvas(): HTMLCanvasElement {
     return this.canvas?.getContext().canvas;
@@ -59,8 +74,8 @@ export abstract class DrawingModeBase {
   /**
    * Removes a hardware from the canvas.
    */
-  public deleteRack(hardware: Hardware) {
-    this.canvas.remove(hardware as fabric.Object);
+  public deleteHardware(hardware: Hardware) {
+    this.canvas.remove(hardware as any);
 
     this.eventAggregator.publish(new HardwareDeselected(hardware));
 

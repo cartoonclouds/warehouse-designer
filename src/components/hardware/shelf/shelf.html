@@ -1,0 +1,48 @@
+<section>
+  <input type="text" class="form-control form-control-sm" placeholder="Shelf label (eg, ${defaultLabel})"
+    value.bind="label">
+
+  <fieldset>
+    <!-- ARIA? <legend>Shelf Properties</legend> -->
+
+    <div class="mb-3">
+      <label for="shelf-code" class="form-label form-label-sm">Code</label>
+      <input type="text" class="form-control form-control-sm" id="shelf-code" value.bind="code">
+    </div>
+
+  </fieldset>
+
+  <!-- <collapsible-section name="details" visible.bind="true">
+    <template au-slot="heading">
+      Details
+    </template>
+
+    <template au-slot="content">
+
+      <table class="table table-sm">
+        <tbody>
+          <tr>
+            <td>Connections</td>
+            <td>${edges.length}</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </template>
+  </collapsible-section> -->
+
+  <collapsible-section name="notes">
+    <template au-slot="heading">
+      Notes
+    </template>
+
+    <template au-slot="content">
+      <textarea type="text" class="form-control form-control-sm" id="shelf-note" value.bind="note" cols="3"></textarea>
+    </template>
+  </collapsible-section>
+
+  <!-- <fieldset>
+    <button type="button">Rank-specific action</button>
+  </fieldset> -->
+
+</section>

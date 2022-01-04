@@ -4,11 +4,13 @@ import { HardwareDeselected, HardwareSelected } from '../../../messages/messages
 import { DOMUtility } from '../../../utils/dom';
 import { observable } from '@aurelia/runtime';
 import { IObjectOptions } from "fabric/fabric-impl";
-import { HardwareEvent, IHardware } from "../hardware";
+import { Drawable, HardwareEvent, IHardware } from "../hardware";
 import RackUtility from "../../../utils/rack-utility";
+import { Shelf } from '../shelf/shelf';
 
 
-export type IRack = Rack | fabric.IRectOptions;
+export type IRack = Rack & fabric.IRectOptions;
+export type IShadowRack = ShadowRack & fabric.IRectOptions;
 
 
 @observable({ name: 'label', callback: 'observableUpdated' })
@@ -21,7 +23,7 @@ export class Rack extends fabric.Rect implements IHardware {
 
   public notes: string;
   public code: string;
-  public shelves: [] = [];
+  public shelves: Shelf[] = [];
   public edges = [];
 
   protected initialPosition: { top: number, left: number };
@@ -50,14 +52,14 @@ export class Rack extends fabric.Rect implements IHardware {
 
 
   constructor(rackDetails: Partial<IRack>, warehouseCanvas: fabric.Canvas, eventAggregator: EventAggregator) {
-    super(Object.assign(Rack.DEFAULT_PROPS, rackDetails));
+    super(Object.assign({}, Rack.DEFAULT_PROPS, rackDetails));
 
     this.warehouseCanvas = warehouseCanvas;
     this.eventAggregator = eventAggregator;
 
-    this.label = this.defaultLabel;
-    this.notes = this.notes;
-    this.code = this.code;
+    this.label = rackDetails.label || this.defaultLabel;
+    this.notes = rackDetails.notes;
+    this.code = rackDetails.code;
 
     this.attachEvents();
   }
@@ -154,6 +156,14 @@ export class Rack extends fabric.Rect implements IHardware {
     });
   }
 
+  public get defaultShelfLabel() {
+    return `Shelf-${this.warehouseCanvas.getObjects('Shelf').length + 1}`;
+  }
+
+  public addShelf(shelfDetails: Partial<Shelf> = {}) {
+    this.shelves.push(new Shelf(shelfDetails, this));
+  }
+
   /**
    * Determines if this hardware is intersecting with another.
    */
@@ -231,7 +241,11 @@ export class Rack extends fabric.Rect implements IHardware {
   public _render(ctx: CanvasRenderingContext2D) {
     super._render(ctx);
 
-    this.renderLabel(ctx);
+    this.renderLabel(ctx)
+
+    this.shelves?.forEach((s: Shelf) => {
+      s.render(ctx);
+    })
   }
 
   protected renderLabel(ctx: CanvasRenderingContext2D) {
@@ -276,7 +290,7 @@ export class Rack extends fabric.Rect implements IHardware {
   @observable public events: HardwareEvent[] = [];
 
 }
-export class ShadowRack extends Rack {
+export class ShadowRack extends Rack implements Drawable {
   public static readonly type: string = "ShadowRack";
   public type = ShadowRack.type;
 

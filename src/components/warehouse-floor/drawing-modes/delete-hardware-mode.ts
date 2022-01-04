@@ -24,7 +24,7 @@ class _DeleteHardwareDrawingMode extends DrawingModeBase {
 
 
   public onMouseUp(options: fabric.IEvent<MouseEvent>) {
-    this.deleteRack(options.target as Rack);
+    this.deleteHardware(options.target as Rack);
   }
 
 
