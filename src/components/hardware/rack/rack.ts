@@ -220,7 +220,7 @@ export class Rack extends fabric.Rect implements IHardware {
     return constrainedY;
   }
 
-  protected observableUpdated(prop) {
+  protected observableUpdated() {
     if (this.warehouseCanvas) {
       this.dirty = true;
       this.render(this.warehouseCanvas.getContext());
@@ -246,8 +246,9 @@ export class Rack extends fabric.Rect implements IHardware {
       this.warehouseCanvas.add(this.fabricLabel);
     }
 
+    this.fabricLabel.text = this.label;
     this.fabricLabel.left = this.left;
-    this.fabricLabel.top = this.top - 20;
+    this.fabricLabel.top = this.top - this.fabricLabel.calcTextHeight() - 4;
   }
 
 
