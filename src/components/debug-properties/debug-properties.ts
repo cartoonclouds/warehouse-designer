@@ -1,6 +1,6 @@
 import { bindable, BindingMode, containerless, EventAggregator, IEventAggregator, inject } from "aurelia";
-import { HardwareEvent } from "../hardware/rack/rack";
 import { observable } from '@aurelia/runtime';
+import { HardwareEvent } from "../hardware/hardware";
 
 @inject()
 export class DebugProperties {
@@ -23,7 +23,7 @@ export class DebugProperties {
     this.eventsUpdater = setInterval(() => {
       try {
         this.formattedEvents = this.model.events.reduce((str, e: HardwareEvent) => {
-          return str + `[${e.dateTime.toLocaleString()}] ${e.domEvent} ${e.message ? ' : ' + e.message : ''}\n`;
+          return str + `[${e.dateTime.toLocaleString()}] ${e.domEvent} ${e.message ? ': ' + e.message : ''}\n`;
         }, '');
 
         const textarea = this.element.querySelector('textarea');

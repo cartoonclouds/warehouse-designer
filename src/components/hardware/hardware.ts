@@ -1,14 +1,28 @@
-import { Point } from "../../hardware-types";
-import { DrawMode } from "../../messages/messages";
+import { IObjectOptions } from "fabric/fabric-impl";
+import { IRack } from "./rack/rack";
 
-export abstract class Hardware {
-  public get modelName() {
-    return this.constructor.name.trim();
-  }
+export class HardwareEvent {
+  dateTime: Date;
+  domEvent: string;
+  message: string;
 
-  public static get className() {
-    return this.name.trim();
+  constructor(params) {
+    this.dateTime = new Date();
+    this.domEvent = params.domEvent;
+    this.message = params.message;
   }
+}
+
+export type Hardware = IRack;
+
+export interface IHardware {
+  modelName: string;
+  isIntersecting: boolean;
+  setOptions(options: IObjectOptions): void;
+  _render(ctx: CanvasRenderingContext2D): void;
+  initialize(options?: fabric.IObjectOptions): any;
+  toObject(): any;
+
 
   // ellipsis
   // let d = dist(this.x, this.y, otherHardware.x, otherHardware.y);

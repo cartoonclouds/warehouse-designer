@@ -1,6 +1,6 @@
-export { Floor } from "./floor/floor";
+export { WarehouseFloor } from "./warehouse-floor/warehouse-floor";
 export { MenuBar } from "./menu-bar/menu-bar";
-export { Hardware } from "./hardware/hardware";
+export { IHardware } from "./hardware/hardware";
 export { Rack } from "./hardware/rack/rack";
 // export { Shelf } from "./p5-elements/shelf/shelf";
 export { StatusBar } from "./status-bar/status-bar";

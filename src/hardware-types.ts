@@ -1,4 +1,4 @@
-import { Hardware, Rack } from "./components";
+import { Rack } from "./components";
 import { ShadowRack } from "./components/hardware/rack/rack";
 
 export type Dimensions = {

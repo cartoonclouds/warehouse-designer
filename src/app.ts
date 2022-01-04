@@ -1,24 +1,17 @@
 import { EventAggregator, IDisposable, IEventAggregator, inject } from "aurelia";
 
-import { GridService } from "./service-providers/grid-service";
-import { WarehouseCanvas } from './utils/warehouse-canvas';
-import { DrawMode, UpdateDrawMode, HardwareSelected, HardwareDeselected } from './messages/messages';
-import { DOMUtility } from './utils/dom';
+import { HardwareSelected, HardwareDeselected } from './messages/messages';
 import { Rack } from "./components";
-import { observable } from '@aurelia/runtime';
+import { Hardware } from "./components/hardware/hardware";
 
 @inject()
 export class App {
   public static readonly InfoBarHeight = 104;
 
-  protected canvas;
-  protected gridService: GridService;
-  protected warehouseCanvas: WarehouseCanvas
+  // Event subscriptions
+  protected messageSubscriptions: IDisposable[] = [];
 
-  protected hardwareDeselectedSubscription: IDisposable;
-  protected hardwareSelectedSubscription: IDisposable;
-
-  @observable public selectedHardware: Rack;
+  public selectedHardware: Hardware;
 
   constructor(
     protected readonly element: HTMLElement,
@@ -33,49 +26,23 @@ export class App {
     }
   }
 
+  public binding() {
+    this.messageSubscriptions.push(
+      this.eventAggregator.subscribe(HardwareSelected, (message: HardwareSelected) => {
+        this.selectedHardware = message.hardware;
+      }),
+      this.eventAggregator.subscribe(HardwareDeselected, (message: HardwareDeselected) => {
+        this.selectedHardware = null;
+      }),
+    );
+  }
 
-  public unbinding() {
-    this.warehouseCanvas.unsubscribe();
-    this.hardwareSelectedSubscription.dispose();
-    this.hardwareDeselectedSubscription.dispose();
+  public unbound() {
+    this.messageSubscriptions.forEach((s: IDisposable) => s.dispose());
+    this.messageSubscriptions = null;
   }
 
 
-  public attached() {
-    this.hardwareSelectedSubscription = this.eventAggregator.subscribe(HardwareSelected, (message: HardwareSelected) => {
-      this.selectedHardware = message.rack;
-
-      console.log(`App > HardwareSelected`, this.selectedHardware);
-    });
-
-
-    this.hardwareDeselectedSubscription = this.eventAggregator.subscribe(HardwareDeselected, (message: HardwareDeselected) => {
-      this.selectedHardware = null;
-    });
-
-
-    // create fabric canvas instance
-    this.warehouseCanvas = new WarehouseCanvas({
-      element: "floor",
-      eventAggregator: this.eventAggregator,
-    }, {
-      selection: false,
-      width: DOMUtility.boundingWidth(),
-      height: (DOMUtility.boundingHeight() - App.InfoBarHeight)
-    });
-
-    // create grid instance
-    this.gridService = new GridService(this.warehouseCanvas, 40, 40);
-    this.warehouseCanvas.setGridService(this.gridService);
-    this.gridService.drawGrid();
-
-    // set initial draw mode as SELECTION
-    // this.eventAggregator.publish(new UpdateDrawMode(DrawMode.ADD_RACK));
-  }
-
-  public detached() {
-    this.canvas = null;
-  }
 
 
   // protected windowResized(p5) {

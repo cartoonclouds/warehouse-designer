@@ -78,7 +78,7 @@ module.exports = function (env, { analyze }) {
       new MiniCssExtractPlugin(),
       new HtmlWebpackPlugin({
         template: "index.html",
-        metadata: { dev: mode !== "production" },
+        metadata: { dev: !production },
       }),
       new Dotenv({
         path: `./.env${

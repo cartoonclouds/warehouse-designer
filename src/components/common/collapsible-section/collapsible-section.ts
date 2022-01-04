@@ -7,7 +7,7 @@ export class CollapsibleSection {
   public static collapsibleSectionCount = 0;
 
   @bindable({ mode: BindingMode.oneTime }) name: string;
-  @bindable({ mode: BindingMode.twoWay }) visible: boolean = false;
+  @bindable({ mode: BindingMode.twoWay }) visible: boolean = true;
 
   private bsCollapse;
 

@@ -1,4 +1,5 @@
 
+import { Hardware } from "../components/hardware/hardware";
 import { Rack } from "../components/hardware/rack/rack";
 import { Dimensions, Point } from "../hardware-types";
 
@@ -14,12 +15,13 @@ export enum DrawMode {
 
 export class UpdateDrawMode {
   public mode: DrawMode;
+  public data: any;
 
-  constructor(mode: DrawMode) {
+  constructor(mode: DrawMode, data?: any) {
     this.mode = mode;
+    this.data = data;
   }
 }
-
 
 export class DeleteRack {
   public rack: Rack;
@@ -31,17 +33,17 @@ export class DeleteRack {
 
 
 export class HardwareSelected {
-  public rack: Rack;
+  public hardware: Hardware;
 
-  constructor(rack: Rack) {
-    this.rack = rack;
+  constructor(hardware: Hardware) {
+    this.hardware = hardware;
   }
 }
 
 export class HardwareDeselected {
-  public rack?: Rack;
+  public hardware?: Hardware;
 
-  constructor(rack?: Rack) {
-    this.rack = rack;
+  constructor(hardware?: Hardware) {
+    this.hardware = hardware;
   }
 }
