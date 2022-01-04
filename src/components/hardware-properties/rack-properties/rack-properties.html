@@ -1,13 +1,13 @@
 <section>
-  <input type="text" class="form-control form-control-sm" placeholder="Rack label (eg, ${defaultLabel})"
-    value.bind="label">
+  <input type="text" class="form-control form-control-sm" placeholder="Rack label (eg, ${rack.defaultLabel})"
+    value.bind="rack.label">
 
   <fieldset>
     <!-- ARIA? <legend>Rack Properties</legend> -->
 
     <div class="mb-3">
       <label for="rack-code" class="form-label form-label-sm">Code</label>
-      <input type="text" class="form-control form-control-sm" id="rack-code" value.bind="code">
+      <input type="text" class="form-control form-control-sm" id="rack-code" value.bind="rack.code">
     </div>
 
   </fieldset>
@@ -23,11 +23,11 @@
         <tbody>
           <tr>
             <td>Shelves</td>
-            <td>${shelves.length}</td>
+            <td>${rack.shelves.length}</td>
           </tr>
           <tr>
             <td>Connections</td>
-            <td>${edges.length}</td>
+            <td>${rack.edges.length}</td>
           </tr>
         </tbody>
       </table>
@@ -41,7 +41,7 @@
     </template>
 
     <template au-slot="content">
-      <textarea type="text" class="form-control form-control-sm" id="rack-note" value.bind="note" cols="3"></textarea>
+      <textarea type="text" class="form-control form-control-sm" id="rack-note" value.bind="rack.note" cols="3"></textarea>
     </template>
   </collapsible-section>
 

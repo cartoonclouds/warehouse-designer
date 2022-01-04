@@ -1,12 +1,10 @@
 import { EventAggregator } from "aurelia";
 import { fabric } from "fabric";
-import { HardwareDeselected, HardwareSelected } from '../../../messages/messages';
-import { DOMUtility } from '../../../utils/dom';
 import { observable } from '@aurelia/runtime';
 import { IObjectOptions } from "fabric/fabric-impl";
-import { Drawable, HardwareEvent, HardwareType, IHardware } from '../hardware';
-import ShelfUtility from "../../../utils/shelf-utility";
-import { Rack } from '../rack/rack';
+import { Rack } from ".";
+import { HardwareEvent } from "./hardware";
+import { HardwareSelected, HardwareDeselected } from "../messages/messages";
 
 
 export type IShelf = Shelf & fabric.IRectOptions;

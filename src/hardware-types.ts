@@ -1,5 +1,4 @@
-import { Rack } from "./components";
-import { ShadowRack } from "./components/hardware/rack/rack";
+import { Rack, ShadowRack } from "./models";
 
 export type Dimensions = {
   width: number;

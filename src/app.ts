@@ -1,8 +1,9 @@
 import { EventAggregator, IDisposable, IEventAggregator, inject } from "aurelia";
 
 import { HardwareSelected, HardwareDeselected } from './messages/messages';
-import { Rack } from "./components";
-import { Hardware } from "./components/hardware/hardware";
+import { Rack } from "./models";
+import { Hardware } from "./models/hardware";
+import { RackProperties } from './components/hardware-properties/rack-properties/rack-properties';
 
 @inject()
 export class App {
@@ -22,7 +23,7 @@ export class App {
   public get selected() {
     return {
       viewModel: this.selectedHardware,
-      model: Rack
+      model: RackProperties
     }
   }
 

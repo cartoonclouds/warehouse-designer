@@ -1,11 +1,10 @@
 import { EventAggregator } from 'aurelia';
-import { Rack } from '../..';
 import { DrawMode, HardwareSelected } from '../../../messages/messages';
 import { GridService } from '../../../service-providers/grid-service';
-import { IRack, ShadowRack } from '../../hardware/rack/rack';
 import { DrawingModeBase } from './drawing-mode-base';
-import { Hardware, HardwareType, ShadowHardware } from '../../hardware/hardware';
-import { IShelf } from '../../hardware/shelf/shelf';
+import { Hardware, HardwareType, ShadowHardware } from '../../../models/hardware';
+import { ShadowRack } from '../../../models';
+import { IRack } from '../../../models/rack';
 
 export class _AddHardwareDrawingMode extends DrawingModeBase {
   public static readonly mode: string = DrawMode.ADD_RACK;

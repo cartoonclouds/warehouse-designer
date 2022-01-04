@@ -1,12 +1,13 @@
 import { EventAggregator } from "aurelia";
 import { fabric } from "fabric";
-import { HardwareDeselected, HardwareSelected } from '../../../messages/messages';
-import { DOMUtility } from '../../../utils/dom';
 import { observable } from '@aurelia/runtime';
 import { IObjectOptions } from "fabric/fabric-impl";
-import { Drawable, HardwareEvent, IHardware } from "../hardware";
-import RackUtility from "../../../utils/rack-utility";
-import { Shelf } from '../shelf/shelf';
+import { Shelf } from ".";
+import { IHardware } from "../components";
+import { HardwareEvent, Drawable } from "./hardware";
+import { HardwareSelected, HardwareDeselected } from "../messages/messages";
+import { DOMUtility } from "../utils/dom";
+import RackUtility from "../utils/rack-utility";
 
 
 export type IRack = Rack & fabric.IRectOptions;
@@ -158,10 +159,6 @@ export class Rack extends fabric.Rect implements IHardware {
 
   public get defaultShelfLabel() {
     return `Shelf-${this.warehouseCanvas.getObjects('Shelf').length + 1}`;
-  }
-
-  public addShelf(shelfDetails: Partial<Shelf> = {}) {
-    this.shelves.push(new Shelf(shelfDetails, this));
   }
 
   /**

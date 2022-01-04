@@ -1,5 +1,6 @@
-import { Rack, Shelf } from "../components";
-import { HardwareType } from '../components/hardware/hardware';
+
+import { Rack, Shelf } from '../models';
+import { HardwareType } from '../models/hardware';
 import { FabricUtility } from "./fabricjs";
 
 export default class ShelfUtility {

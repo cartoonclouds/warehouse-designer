@@ -10,7 +10,7 @@ import { SelectionDrawingMode } from './drawing-modes/selection-mode';
 import { AddHardwareDrawingMode, _AddHardwareDrawingMode } from "./drawing-modes/add-hardware-mode";
 import { DeleteHardwareDrawingMode } from "./drawing-modes/delete-hardware-mode";
 import FloorSeeder from "../../utils/floor-seeder";
-import { HardwareType } from "../hardware/hardware";
+import { HardwareType } from "../../models/hardware";
 
 @inject()
 export class WarehouseFloor {

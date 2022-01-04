@@ -1,5 +1,6 @@
-import { Rack } from "../components";
-import { HardwareType } from "../components/hardware/hardware";
+
+import { Rack } from "../models";
+import { HardwareType } from "../models/hardware";
 import { FabricUtility } from "./fabricjs";
 
 export default class RackUtility {

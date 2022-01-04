@@ -19,7 +19,7 @@ export class MenuBar {
             }
         }),
         new ToggleButton({
-            icon: "",
+            icon: "far fa-pallet",
             text: "Add New Rack",
             drawMode: DrawMode.ADD_RACK,
             clickAction: () => {

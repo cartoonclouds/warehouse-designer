@@ -1,10 +1,9 @@
 import { EventAggregator } from "aurelia";
-import { Rack } from "../..";
 import { HardwareDeselected } from "../../../messages/messages";
 import { GridService } from "../../../service-providers/grid-service";
-import { Hardware } from "../../hardware/hardware";
-import { IRack } from "../../hardware/rack/rack";
-import { IShelf, Shelf } from "../../hardware/shelf/shelf";
+import { Hardware } from "../../../models/hardware";
+import { Rack } from "../../../models";
+import { IRack } from "../../../models/rack";
 
 export abstract class DrawingModeBase {
   protected readonly canvas: fabric.Canvas;

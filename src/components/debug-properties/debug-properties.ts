@@ -1,6 +1,6 @@
 import { bindable, BindingMode, containerless, EventAggregator, IEventAggregator, inject } from "aurelia";
 import { observable } from '@aurelia/runtime';
-import { HardwareEvent } from "../hardware/hardware";
+import { HardwareEvent } from "../../models/hardware";
 
 @inject()
 export class DebugProperties {

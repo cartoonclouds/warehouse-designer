@@ -1,6 +1,5 @@
 
-import { Hardware } from "../components/hardware/hardware";
-import { Rack } from "../components/hardware/rack/rack";
+import { Hardware } from "../models/hardware";
 import { Dimensions, Point } from "../hardware-types";
 
 export enum DrawMode {

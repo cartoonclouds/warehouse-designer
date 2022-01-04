@@ -1,6 +1,6 @@
 import { IEventAggregator, EventAggregator } from 'aurelia';
-import { Rack } from '../..';
 import { DrawMode, HardwareDeselected } from '../../../messages/messages';
+import { Hardware } from '../../../models/hardware';
 import { GridService } from '../../../service-providers/grid-service';
 import { DrawingModeBase } from './drawing-mode-base';
 
@@ -24,7 +24,7 @@ class _DeleteHardwareDrawingMode extends DrawingModeBase {
 
 
   public onMouseUp(options: fabric.IEvent<MouseEvent>) {
-    this.deleteHardware(options.target as Rack);
+    this.deleteHardware(options.target as Hardware);
   }
 
 

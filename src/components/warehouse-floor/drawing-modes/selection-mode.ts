@@ -1,5 +1,4 @@
 import { IEventAggregator, EventAggregator } from 'aurelia';
-import { Rack } from '../..';
 import { DrawMode } from '../../../messages/messages';
 import { GridService } from '../../../service-providers/grid-service';
 import { DrawingModeBase } from './drawing-mode-base';

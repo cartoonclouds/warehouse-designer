@@ -1,6 +1,6 @@
 import { IObjectOptions } from "fabric/fabric-impl";
-import { IRack, IShadowRack } from "./rack/rack";
-import { IShelf } from './shelf/shelf';
+import { IRack, IShadowRack } from "./rack";
+import { IShelf } from "./shelf";
 
 export class HardwareEvent {
   dateTime: Date;
