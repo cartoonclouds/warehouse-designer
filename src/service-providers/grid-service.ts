@@ -41,7 +41,8 @@ export class GridService {
     return {
       type: 'line',
       stroke: '#ccc',
-      selectable: false
+      selectable: false,
+      evented: false
     };
   }
 

@@ -1,10 +1,13 @@
 <menu-bar></menu-bar>
 <main>
-  <hardware-properties if.bind="selectedHardware" model.bind="selected.model" view-model.bind="selected.viewModel">
-  </hardware-properties>
+  <template switch.bind="selectedHardware.modelName">
+    <rack-properties case="Rack" rack.bind="selectedHardware"></rack-properties>
+    <!-- <shelf-properties repeat.for="shelf in selectedHardware.shelves" shelf.bind="shelf"></shelf-properties> -->
+  </template>
+
 
   <warehouse-floor></warehouse-floor>
 
-  <debug-properties if.bind="selectedHardware" model.bind="selected.viewModel"></debug-properties>
+  <debug-properties if.bind="selectedHardware" model.bind="selectedHardware"></debug-properties>
 </main>
 <status-bar></status-bar>

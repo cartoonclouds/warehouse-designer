@@ -11,7 +11,7 @@ export class RackProperties {
   }
 
   public addShelf(shelfDetails: Partial<Shelf> = {}) {
-    this.rack.shelves.push(new Shelf(shelfDetails, this.rack));
+    this.rack.addShelf(shelfDetails);
   }
 
 }

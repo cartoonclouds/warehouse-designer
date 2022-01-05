@@ -28,11 +28,13 @@ export default class FloorSeeder {
       left: 600,
     });
 
+    tmpRack.addShelf();
+
     this.drawingModeHandler.createRack({
       top: 120,
       left: 700,
     });
-    
+
     this.eventAggregator.publish(new HardwareSelected(tmpRack));
   }
 }

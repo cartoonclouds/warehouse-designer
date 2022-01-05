@@ -21,28 +21,6 @@ export abstract class DrawingModeBase {
     this.eventAggregator = eventAggregator;
   }
 
-  public get racks() {
-    return this.canvas?.getObjects("Rack") || [];
-  }
-
-  public racksExcept(rack: Rack) {
-    return this.racks.filter((r: Rack) => r !== rack);
-  }
-
-  public get hardwares() {
-    const hardwares = [];
-
-    hardwares.push(...(this.canvas?.getObjects("Rack") || []));
-    hardwares.push(...(this.canvas?.getObjects("Shelf") || []));
-
-    return hardwares;
-  }
-
-  public hardwareExcept(hardware: Hardware) {
-    return this.hardwares.filter((h: Hardware) => h !== hardware);
-  }
-
-
   public get DOMCanvas(): HTMLCanvasElement {
     return this.canvas?.getContext().canvas;
   }
@@ -51,6 +29,9 @@ export abstract class DrawingModeBase {
     return this.canvas?.getContext();
   }
 
+  public renderAll() {
+    return this.canvas?.renderAll();
+  }
 
   /**
    * Adds a rack to the list of created racks.
@@ -60,10 +41,9 @@ export abstract class DrawingModeBase {
    */
   public createRack(rackDetails: Partial<IRack>,) {
     const newRack = new Rack({
-      type: Rack.type,
       left: rackDetails.left,
       top: rackDetails.top
-    }, this.canvas, this.eventAggregator);
+    });
 
     this.canvas.add(newRack);
 

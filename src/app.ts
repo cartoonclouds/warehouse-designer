@@ -20,13 +20,6 @@ export class App {
   ) {
   }
 
-  public get selected() {
-    return {
-      viewModel: this.selectedHardware,
-      model: RackProperties
-    }
-  }
-
   public binding() {
     this.messageSubscriptions.push(
       this.eventAggregator.subscribe(HardwareSelected, (message: HardwareSelected) => {

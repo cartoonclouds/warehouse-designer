@@ -1,4 +1,6 @@
-<section>
+<require from="../hardware-properties.scss"></require>
+
+<section class="hardware-properties">
   <input type="text" class="form-control form-control-sm" placeholder="Rack label (eg, ${rack.defaultLabel})"
     value.bind="rack.label">
 
@@ -23,11 +25,11 @@
         <tbody>
           <tr>
             <td>Shelves</td>
-            <td>${rack.shelves.length}</td>
+            <td>${rack.shelves.size() || 0}</td>
           </tr>
           <tr>
             <td>Connections</td>
-            <td>${rack.edges.length}</td>
+            <td>${rack.edges.size() || 0}</td>
           </tr>
         </tbody>
       </table>
@@ -41,7 +43,8 @@
     </template>
 
     <template au-slot="content">
-      <textarea type="text" class="form-control form-control-sm" id="rack-note" value.bind="rack.note" cols="3"></textarea>
+      <textarea type="text" class="form-control form-control-sm" id="rack-note" value.bind="rack.note"
+        cols="3"></textarea>
     </template>
   </collapsible-section>
 

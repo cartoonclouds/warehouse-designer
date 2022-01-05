@@ -5,13 +5,14 @@ import { DrawingModeBase } from './drawing-mode-base';
 import { Hardware, HardwareType, ShadowHardware } from '../../../models/hardware';
 import { ShadowRack } from '../../../models';
 import { IRack } from '../../../models/rack';
+import { WarehouseFloor } from '../warehouse-floor';
 
 export class _AddHardwareDrawingMode extends DrawingModeBase {
   public static readonly mode: string = DrawMode.ADD_RACK;
   public mode = _AddHardwareDrawingMode.mode;
 
   protected shadowHardware: ShadowHardware;
-  public hardwareType: HardwareType;
+  public hardwareType: HardwareType = HardwareType.RACK;
 
   constructor(
     canvas: fabric.Canvas,
@@ -55,7 +56,7 @@ export class _AddHardwareDrawingMode extends DrawingModeBase {
   }
 
   public load() {
-    this.hardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
+    WarehouseFloor.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
       hardware.selectable = false;
       hardware.evented = false;
     });
@@ -68,7 +69,7 @@ export class _AddHardwareDrawingMode extends DrawingModeBase {
       this.shadowHardware = null;
     }
 
-    this.hardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
+    WarehouseFloor.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
       hardware.selectable = true;
       hardware.evented = true;
     });

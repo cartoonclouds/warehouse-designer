@@ -1,134 +1,37 @@
-import { EventAggregator } from "aurelia";
 import { fabric } from "fabric";
 import { observable } from '@aurelia/runtime';
-import { IObjectOptions } from "fabric/fabric-impl";
 import { Rack } from ".";
 import { HardwareEvent } from "./hardware";
-import { HardwareSelected, HardwareDeselected } from "../messages/messages";
+import { WarehouseFloor } from '../components';
 
 
-export type IShelf = Shelf & fabric.IRectOptions;
+export type IShelf = Shelf;
+export type IShelves = Shelves & fabric.IGroupOptions;
 
-
-@observable({ name: 'label', callback: 'observableUpdated' })
-@observable({ name: 'code', callback: 'observableUpdated' })
-@observable({ name: 'left', callback: 'observableUpdated' })
-@observable({ name: 'top', callback: 'observableUpdated' })
-export class Shelf extends fabric.Rect {
+export class Shelf extends fabric.Object {
   public static readonly type: string = "Shelf";
   public type = Shelf.type;
 
   public notes: string;
   public code: string;
-  public readonly rack: Rack;
+  public rack: Rack;
 
-  protected static DEFAULT_PROPS = {
-    type: Shelf.type,
-    lockRotation: true,
-    hasControls: false,
-    perPixelTargetFind: true,
-  };
-
-
-  //@TODO Autoinject
-  protected eventAggregator: EventAggregator;
-  protected warehouseCanvas: fabric.Canvas;
 
   public label: string;
-  protected fabricLabel: fabric.Text;
   public get defaultLabel() {
-    return `Shelf-${this.warehouseCanvas.getObjects('Shelf').length + 1} for Rack ${this.rack?.label}`;
+    return `Shelf-${WarehouseFloor.shelves.length + 1} for Rack ${this.rack?.label}`;
   }
 
-
-  constructor(shelfDetails: Partial<Shelf>, rack?: Rack) {
-    super(Object.assign({}, Shelf.DEFAULT_PROPS, shelfDetails));
+  constructor(shelfDetails: Partial<Shelf>, rack: Rack) {
+    super({
+      type: Shelf.type
+    });
 
     this.rack = rack;
-
-    this.updateLocation();
 
     this.label = shelfDetails.label || this.defaultLabel;
     this.notes = shelfDetails.notes;
     this.code = shelfDetails.code;
-
-    this.attachEvents();
-  }
-
-
-  protected attachEvents() {
-    this.on("selected", (e: fabric.IEvent<MouseEvent>) => {
-      this.eventAggregator.publish(new HardwareSelected(this));
-
-
-      this.events.push(new HardwareEvent({
-        domEvent: "selected"
-      }));
-    });
-
-    this.on("deselected", (e: fabric.IEvent<MouseEvent>) => {
-      this.eventAggregator.publish(new HardwareDeselected(this));
-
-
-      this.events.push(new HardwareEvent({
-        domEvent: "deselected"
-      }));
-    });
-
-    this.on("removed", (e: fabric.IEvent<MouseEvent>) => {
-      this.warehouseCanvas.remove(this.fabricLabel);
-    });
-  }
-
-  public setOptions(options: IObjectOptions): void {
-    super.setOptions(options);
-
-    //    see "When to call setCoords" github page
-    this.setCoords();
-  }
-
-  public updateLocation() {
-    if (!this.rack) {
-      return;
-    }
-
-    this.setOptions({
-      left: this.rack.left + 4,
-      top: this.rack.top + 4,
-    });
-  }
-
-  protected observableUpdated() {
-    if (this.warehouseCanvas) {
-      this.dirty = true;
-      this.render(this.warehouseCanvas.getContext());
-      this.warehouseCanvas.renderAll();
-    }
-  }
-
-  public _render(ctx: CanvasRenderingContext2D) {
-    this.updateLocation();
-
-    super._render(ctx);
-
-    this.renderLabel(ctx);
-  }
-
-  protected renderLabel(ctx: CanvasRenderingContext2D) {
-    if (!this.fabricLabel) {
-      this.fabricLabel = new fabric.Text(this.label, {
-        fontFamily: 'Helvetica',
-        strokeWidth: 0,
-        stroke: '#333',
-        fontSize: 14
-      });
-
-      this.warehouseCanvas.add(this.fabricLabel);
-    }
-
-    this.fabricLabel.text = this.label;
-    this.fabricLabel.left = this.left;
-    this.fabricLabel.top = this.top - this.fabricLabel.calcTextHeight() - 4;
   }
 
 
@@ -154,5 +57,135 @@ export class Shelf extends fabric.Rect {
 
 
   @observable public events: HardwareEvent[] = [];
+}
 
+
+export class Shelves extends fabric.Group {
+  public static readonly type: string = "Shelves";
+  public type = Shelves.type;
+
+  protected rack: Rack;
+  protected shelves: Shelf[] = [];
+
+  protected static DEFAULT_SHELF_PROPS = {
+    type: Shelves.type,
+    fill: 'red',
+    subTargetCheck: true,
+    hasControls: false,
+    selectable: false,
+    evented: false,
+    perPixelTargetFind: true
+  };
+
+  protected label: fabric.Text;
+
+
+  public constructor(rack: Rack) {
+    super([], {
+      type: Shelves.type
+    });
+
+    this.rack = rack;
+
+    this.addWithUpdate(this.generateLabel());
+
+    this.setOptions(Object.assign({}, Shelves.DEFAULT_SHELF_PROPS, {
+      left: rack.left,
+      top: rack.top,
+      width: rack.width,
+      height: rack.height
+    }));
+
+    this.setCoords();
+    this.setObjectsCoords();
+
+    this.attachObservers();
+
+
+
+    // const shelfImage = new fabric.IText('\f1ea HELLO HELLO HELLO HELLO', {
+    //   top: 0,
+    //   left: 0, //Take the block's position
+    //   // fill: 'white',
+    //   fontSize: 60,
+    //   // fontFamily: 'Font Awesome 5 Free',
+    //   fontFamily: 'FontAwesome',
+    //   selectable: false
+    // });
+    //   fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg",function(objects,options) {
+
+    //     var loadedObjects = new fabric.Group(group);
+
+    //     loadedObjects.set({
+    //             left: 100,
+    //             top: 100,
+    //             width:175,
+    //             height:175
+    //     });
+
+    //     canvas.add(loadedObjects);
+    //     canvas.renderAll();
+
+    // },function(item, object) {
+    //         object.set('id',item.getAttribute('id'));
+    //         group.push(object);
+    // });
+
+  }
+
+  protected generateLabel() {
+    if (!this.label) {
+      this.label = new fabric.Text(`Shelves Count ${this.count}`, {
+        top: 0,
+        left: 0,
+        fontFamily: 'Helvetica',
+        strokeWidth: 0,
+        stroke: '#333',
+        fontSize: 14,
+        selectable: false,
+        evented: false,
+        hasControls: false,
+      });
+    }
+
+    return this.label;
+  }
+
+  protected attachObservers() {
+    WarehouseFloor.observer
+      .getArrayObserver(this._objects)
+      .subscribe({
+        handleCollectionChange: (newVale) => {
+          this.label.text = `Shelves Count ${this.count}`;
+        }
+      });
+  }
+
+  public get count() {
+    return this.getObjects(Shelf.type).length;
+  }
+
+  public addShelf(shelfDetails: Partial<Shelf> = {}) {
+    this.addWithUpdate(new Shelf(shelfDetails, this.rack));
+    // this.set('dirty', true);
+  }
+
+
+  // [Symbol.iterator]() {
+  //   // Use a new index for each iterator. This makes multiple
+  //   // iterations over the iterable safe for non-trivial cases,
+  //   // such as use of break or nested looping over the same iterable.
+  //   let index = 0;
+  //   let shelves = this.getObjects(Shelf.type);
+
+  //   return {
+  //     next: () => {
+  //       if (index < shelves.length) {
+  //         return { value: shelves[index++], done: false }
+  //       } else {
+  //         return { done: true }
+  //       }
+  //     }
+  //   }
+  // }
 }

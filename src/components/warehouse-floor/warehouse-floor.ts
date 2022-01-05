@@ -1,5 +1,5 @@
 import { EventAggregator, IEventAggregator, IDisposable, inject } from "aurelia";
-import { observable } from '@aurelia/runtime';
+import { observable, ObserverLocator } from '@aurelia/runtime';
 import { fabric } from 'fabric';
 import { isRack } from "../../hardware-types";
 import { DrawMode, HardwareSelected, UpdateDrawMode, DeleteHardware } from '../../messages/messages';
@@ -10,11 +10,16 @@ import { SelectionDrawingMode } from './drawing-modes/selection-mode';
 import { AddHardwareDrawingMode, _AddHardwareDrawingMode } from "./drawing-modes/add-hardware-mode";
 import { DeleteHardwareDrawingMode } from "./drawing-modes/delete-hardware-mode";
 import FloorSeeder from "../../utils/floor-seeder";
-import { HardwareType } from "../../models/hardware";
+import { Hardware, HardwareType } from "../../models/hardware";
+import IContainer from 'aurelia';
+import { Rack } from "../../models";
+import { Shelf } from '../../models/shelf';
 
 @inject()
 export class WarehouseFloor {
-  protected canvas: fabric.Canvas;
+  protected static canvas: fabric.Canvas;
+  public static eventAggregator: EventAggregator;
+  public static observer: ObserverLocator;
 
   @observable protected drawingMode: DrawMode;
   protected drawingModeHandler;
@@ -28,18 +33,24 @@ export class WarehouseFloor {
   constructor(
     protected readonly element: HTMLElement,
     protected readonly gridService: GridService,
-    @IEventAggregator protected readonly eventAggregator: EventAggregator) { }
+    @IEventAggregator public readonly eventAggregator: EventAggregator,
+    protected readonly observerLocator: ObserverLocator
+  ) {
+    WarehouseFloor.observer = observerLocator;
+    WarehouseFloor.eventAggregator = eventAggregator;
+  }
 
 
   public attached() {
-    this.canvas = new fabric.Canvas(
+    WarehouseFloor.canvas = new fabric.Canvas(
       this.element.querySelector('#warehouuse-floor') as HTMLCanvasElement, {
-      selection: false,
+      // selection: false,
+      preserveObjectStacking: true,
       width: DOMUtility.boundingWidth(),
       height: (DOMUtility.boundingHeight() - App.InfoBarHeight)
     });
 
-    this.gridService.canvas = this.canvas;
+    this.gridService.canvas = WarehouseFloor.canvas;
     this.gridService.setXY(40, 40);
     this.gridService.drawGrid();
 
@@ -52,12 +63,13 @@ export class WarehouseFloor {
 
     //@TODO For testing purposes
     this.eventAggregator.publish(new UpdateDrawMode(DrawMode.SELECTION));
-    (new FloorSeeder(this.canvas, this.drawingModeHandler, this.gridService, this.eventAggregator)).seed();
+    (new FloorSeeder(WarehouseFloor.canvas, this.drawingModeHandler, this.gridService, this.eventAggregator)).seed();
 
+    WarehouseFloor.canvas.renderAll();
   }
 
   public drawingModeChanged() {
-    if (!this.canvas || !this.gridService || !this.eventAggregator) {
+    if (!WarehouseFloor.canvas || !this.gridService || !this.eventAggregator) {
       return;
     }
 
@@ -65,28 +77,28 @@ export class WarehouseFloor {
 
     switch (this.drawingMode) {
       case DrawMode.ADD_RACK:
-        this.drawingModeHandler = AddHardwareDrawingMode.getInstance(this.canvas, this.gridService, this.eventAggregator);
+        this.drawingModeHandler = AddHardwareDrawingMode.getInstance(WarehouseFloor.canvas, this.gridService, this.eventAggregator);
         break;
 
       case DrawMode.SELECTION:
-        this.drawingModeHandler = SelectionDrawingMode.getInstance(this.canvas, this.gridService, this.eventAggregator);
+        this.drawingModeHandler = SelectionDrawingMode.getInstance(WarehouseFloor.canvas, this.gridService, this.eventAggregator);
 
         break;
 
       case DrawMode.DELETE_HARDWARE:
-        this.drawingModeHandler = DeleteHardwareDrawingMode.getInstance(this.canvas, this.gridService, this.eventAggregator);
+        this.drawingModeHandler = DeleteHardwareDrawingMode.getInstance(WarehouseFloor.canvas, this.gridService, this.eventAggregator);
 
         break;
     }
 
-    this.canvas.renderAll();
+    WarehouseFloor.canvas.renderAll();
   }
 
 
   protected attachSubscriptions() {
     this.messageSubscriptions.push(
       this.eventAggregator.subscribe(HardwareSelected, (message: HardwareSelected) => {
-        this.canvas.setActiveObject(message.hardware as fabric.Object);
+        WarehouseFloor.canvas.setActiveObject(message.hardware as fabric.Object);
       }),
       this.eventAggregator.subscribe(UpdateDrawMode, (message: UpdateDrawMode) => {
         this.drawingMode = message.mode;
@@ -100,15 +112,15 @@ export class WarehouseFloor {
 
 
   public attachEvents() {
-    this.canvas.off('mouse:up');
-    this.canvas.off('mouse:move');
+    WarehouseFloor.canvas.off('mouse:up');
+    WarehouseFloor.canvas.off('mouse:move');
 
     // add mouse events
-    this.canvas.on('mouse:up', (e) => {
+    WarehouseFloor.canvas.on('mouse:up', (e) => {
       this.drawingModeHandler?.onMouseUp(e);
     });
 
-    this.canvas.on('mouse:move', (e) => {
+    WarehouseFloor.canvas.on('mouse:move', (e) => {
       this.drawingModeHandler?.onMouseMove(e);
     });
   }
@@ -130,7 +142,7 @@ export class WarehouseFloor {
   }
 
   public onKeyDown(keyboardEvent: KeyboardEvent) {
-    const selectedHardware = this.canvas.getActiveObject();
+    const selectedHardware = WarehouseFloor.canvas.getActiveObject();
 
     switch (keyboardEvent.code) {
       case "Delete":
@@ -164,9 +176,10 @@ export class WarehouseFloor {
     this.altKeyPressed = false;
   }
 
+
   public detached() {
-    this.canvas.off('mouse:up');
-    this.canvas.off('mouse:move');
+    WarehouseFloor.canvas.off('mouse:up');
+    WarehouseFloor.canvas.off('mouse:move');
 
     this.messageSubscriptions.forEach((s: IDisposable) => s.dispose());
     this.messageSubscriptions = null;
@@ -177,4 +190,42 @@ export class WarehouseFloor {
     this.DOMEventListeners = null;
   }
 
+  public static renderAll(withFabricObject?: fabric.Object | fabric.Object[]): fabric.Canvas {
+    if (withFabricObject) {
+      (Array.isArray(withFabricObject) ? withFabricObject : [withFabricObject])
+        .forEach(o => o.render(WarehouseFloor.canvas.getContext())
+        );
+    }
+
+    return WarehouseFloor.canvas.renderAll();
+  }
+  public static setMoveCursor(cursor) {
+    WarehouseFloor.canvas.moveCursor = cursor;
+  }
+  public static setCursor(cursor) {
+    WarehouseFloor.canvas.setCursor(cursor);
+  }
+  public static get width() {
+    return WarehouseFloor.canvas.width;
+  }
+  public static get height() {
+    return WarehouseFloor.canvas.height;
+  }
+  public static get racks() {
+    return WarehouseFloor.canvas.getObjects(Rack.type);
+  }
+  public static get shelves() {
+    return WarehouseFloor.canvas.getObjects(Shelf.type);
+  }
+  public static getAllHardware() {
+    const hardwares = [];
+
+    hardwares.push(...(WarehouseFloor.racks || []));
+    hardwares.push(...(WarehouseFloor.shelves || []));
+
+    return hardwares;
+  }
+  public static getAllHardwareExcept(hardware: Hardware) {
+    return WarehouseFloor.getAllHardware().filter((h: Hardware) => h !== hardware);
+  }
 }
