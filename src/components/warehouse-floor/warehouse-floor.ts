@@ -47,7 +47,7 @@ export class WarehouseFloor {
       // selection: false,
       preserveObjectStacking: true,
       width: DOMUtility.boundingWidth(),
-      height: (DOMUtility.boundingHeight() - App.InfoBarHeight)
+      height: (DOMUtility.boundingHeight() - App.InfoBarHeight),
     });
 
     this.gridService.canvas = WarehouseFloor.canvas;

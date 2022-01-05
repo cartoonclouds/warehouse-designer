@@ -24,7 +24,11 @@ export class Shelf extends fabric.Object {
 
   constructor(shelfDetails: Partial<Shelf>, rack: Rack) {
     super({
-      type: Shelf.type
+      type: Shelf.type,
+      left: rack.centerX,
+      top: rack.centerY,
+      originX: 'center',
+      originY: 'center'
     });
 
     this.rack = rack;
@@ -96,12 +100,7 @@ export class Shelves extends fabric.Group {
       height: rack.height
     }));
 
-    this.setCoords();
-    this.setObjectsCoords();
-
     this.attachObservers();
-
-
 
     // const shelfImage = new fabric.IText('\f1ea HELLO HELLO HELLO HELLO', {
     //   top: 0,
@@ -167,7 +166,6 @@ export class Shelves extends fabric.Group {
 
   public addShelf(shelfDetails: Partial<Shelf> = {}) {
     this.addWithUpdate(new Shelf(shelfDetails, this.rack));
-    // this.set('dirty', true);
   }
 
 

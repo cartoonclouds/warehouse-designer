@@ -43,10 +43,12 @@ export class Rack extends fabric.Group implements IHardware {
     type: Rack.type,
     subTargetCheck: true,
     hasControls: false,
-    hasBorders: false,
+    hasBorders: true,
     selectable: true,
     evented: true,
     perPixelTargetFind: true,
+    //@TODO For testing
+    borderColor: 'red',
   };
 
 
@@ -177,7 +179,6 @@ export class Rack extends fabric.Group implements IHardware {
       this.setCoords();
 
 
-
       WarehouseFloor.renderAll(this.rack);
 
 
@@ -213,6 +214,7 @@ export class Rack extends fabric.Group implements IHardware {
     // see "When to call setCoords" github page
     this.rack.setCoords();
     this.rack.set('dirty', true);
+
     WarehouseFloor.renderAll(this.rack);
   }
 
@@ -228,11 +230,9 @@ export class Rack extends fabric.Group implements IHardware {
 
     // this.setCoords();
     // this.setObjectsCoords();
+    // this.forEachObject(o => o.setCoords());
 
-    // this.shelves.setCoords();
-    // this.shelves.setObjectsCoords();
-
-    WarehouseFloor.renderAll();
+    WarehouseFloor.renderAll(this.shelves);
   }
 
   public _render(ctx: CanvasRenderingContext2D) {
@@ -259,6 +259,7 @@ export class Rack extends fabric.Group implements IHardware {
     }
 
     this.fabricLabel.text = this.label;
+    this.fabricLabel.set('dirty', true);
 
     WarehouseFloor.renderAll(this.fabricLabel);
   }
@@ -309,6 +310,12 @@ export class Rack extends fabric.Group implements IHardware {
     return this.constructor.name.trim();
   }
 
+  public get centerX() {
+    return this.left + (this.width / 2);
+  }
+  public get centerY() {
+    return this.top + (this.height / 2);
+  }
 
   @observable public events: HardwareEvent[] = [];
 
