@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const Dotenv = require("dotenv-webpack");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { DefinePlugin } = require("webpack");
 
 const cssLoader = "css-loader";
 const lessLoader = "less-loader";
@@ -16,6 +17,11 @@ const postcssLoader = {
     },
   },
 };
+
+// https://webpack.js.org/plugins/provide-plugin/
+//
+// https://medium.com/@bhautikbharadava/environment-variables-webpack-config-using-defineplugin-1a7f38e2236e
+// https://dev.to/vyasriday/using-defineplugin-to-define-api-urls-in-webpack-5f1e
 
 module.exports = function (env, { analyze }) {
   const production = env.production || process.env.NODE_ENV === "production";
@@ -34,11 +40,7 @@ module.exports = function (env, { analyze }) {
     },
     resolve: {
       extensions: [".ts", ".js"],
-      modules: [
-        path.resolve(__dirname, "src"),
-        path.resolve(__dirname, "dev-app"),
-        "node_modules",
-      ],
+      modules: [path.resolve(__dirname, "src"), "node_modules"],
     },
     devServer: {
       historyApiFallback: true,
@@ -75,6 +77,9 @@ module.exports = function (env, { analyze }) {
       ],
     },
     plugins: [
+      new DefinePlugin({
+        __DEV__: true,
+      }),
       new MiniCssExtractPlugin(),
       new HtmlWebpackPlugin({
         template: "index.html",

@@ -1,24 +1,23 @@
-import { EventAggregator } from 'aurelia';
+import { EventAggregator, IEventAggregator, inject } from 'aurelia';
 import { DrawMode, HardwareSelected } from '../../../messages/messages';
-import { GridService } from '../../../service-providers/grid-service';
 import { DrawingModeBase } from './drawing-mode-base';
 import { Hardware, HardwareType, ShadowHardware } from '../../../models/hardware';
 import { ShadowRack } from '../../../models';
 import { IRack } from '../../../models/rack';
-import { WarehouseFloor } from '../warehouse-floor';
+import CanvasService from '../../../service-providers/canvas-service';
 
-export class _AddHardwareDrawingMode extends DrawingModeBase {
+@inject()
+export class AddHardwareDrawingMode extends DrawingModeBase {
   public static readonly mode: string = DrawMode.ADD_RACK;
-  public mode = _AddHardwareDrawingMode.mode;
+  public mode = AddHardwareDrawingMode.mode;
 
   protected shadowHardware: ShadowHardware;
   public hardwareType: HardwareType = HardwareType.RACK;
 
   constructor(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator) {
-    super(canvas, gridService, eventAggregator);
+    @IEventAggregator protected readonly eventAggregator: EventAggregator
+  ) {
+    super(eventAggregator);
   }
 
 
@@ -29,18 +28,18 @@ export class _AddHardwareDrawingMode extends DrawingModeBase {
           this.shadowHardware = new ShadowRack({
             label: `ShadowRack`,
             selectable: false,
-          }, this.canvas, this.eventAggregator);
+          }, super.canvasService.canvas, this.eventAggregator);
           break;
       }
 
 
-      this.canvas.add(this.shadowHardware as fabric.Object);
+      super.canvasService.canvas.add(this.shadowHardware as fabric.Object);
       this.eventAggregator.publish(new HardwareSelected(this.shadowHardware));
     }
 
     this.shadowHardware.draw(options);
 
-    this.canvas.renderAll();
+    super.canvasService.canvas.renderAll();
   }
 
   public onMouseUp(options: fabric.IEvent<MouseEvent>) {
@@ -52,11 +51,11 @@ export class _AddHardwareDrawingMode extends DrawingModeBase {
       }
     }
 
-    this.canvas.renderAll();
+    super.canvasService.canvas.renderAll();
   }
 
   public load() {
-    WarehouseFloor.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
+    super.canvasService.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
       hardware.selectable = false;
       hardware.evented = false;
     });
@@ -69,27 +68,9 @@ export class _AddHardwareDrawingMode extends DrawingModeBase {
       this.shadowHardware = null;
     }
 
-    WarehouseFloor.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
+    super.canvasService.getAllHardwareExcept(this.shadowHardware).forEach((hardware: Hardware) => {
       hardware.selectable = true;
       hardware.evented = true;
     });
-  }
-}
-
-export class AddHardwareDrawingMode {
-  private static instance: Readonly<_AddHardwareDrawingMode>;
-
-  public static getInstance(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator
-  ) {
-    if (!AddHardwareDrawingMode.instance) {
-      AddHardwareDrawingMode.instance = new _AddHardwareDrawingMode(canvas, gridService, eventAggregator);
-    }
-
-    AddHardwareDrawingMode.instance.load();
-
-    return AddHardwareDrawingMode.instance;
   }
 }

@@ -1,18 +1,18 @@
-import { IEventAggregator, EventAggregator } from 'aurelia';
-import { DrawMode, HardwareDeselected } from '../../../messages/messages';
+import { IEventAggregator, EventAggregator, inject } from 'aurelia';
+import { DrawMode } from '../../../messages/messages';
 import { Hardware } from '../../../models/hardware';
-import { GridService } from '../../../service-providers/grid-service';
+import CanvasService from '../../../service-providers/canvas-service';
 import { DrawingModeBase } from './drawing-mode-base';
 
-class _DeleteHardwareDrawingMode extends DrawingModeBase {
+@inject()
+export class DeleteHardwareDrawingMode extends DrawingModeBase {
   public static readonly mode: string = DrawMode.DELETE_HARDWARE;
-  public mode = _DeleteHardwareDrawingMode.mode;
+  public mode = DeleteHardwareDrawingMode.mode;
 
   constructor(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator) {
-    super(canvas, gridService, eventAggregator);
+    @IEventAggregator protected readonly eventAggregator: EventAggregator
+  ) {
+    super(eventAggregator);
   }
 
 
@@ -34,23 +34,5 @@ class _DeleteHardwareDrawingMode extends DrawingModeBase {
 
   public unload() {
 
-  }
-}
-
-export class DeleteHardwareDrawingMode {
-  private static instance: Readonly<_DeleteHardwareDrawingMode>;
-
-  public static getInstance(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator
-  ) {
-    if (!DeleteHardwareDrawingMode.instance) {
-      DeleteHardwareDrawingMode.instance = new _DeleteHardwareDrawingMode(canvas, gridService, eventAggregator);
-    }
-
-    DeleteHardwareDrawingMode.instance.load();
-
-    return DeleteHardwareDrawingMode.instance;
   }
 }

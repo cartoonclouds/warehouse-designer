@@ -1,36 +1,30 @@
-import { EventAggregator } from "aurelia";
+import { DI, EventAggregator, IEventAggregator } from "aurelia";
 import { HardwareDeselected } from "../../../messages/messages";
-import { GridService } from "../../../service-providers/grid-service";
 import { Hardware } from "../../../models/hardware";
 import { Rack } from "../../../models";
 import { IRack } from "../../../models/rack";
+import CanvasService from '../../../service-providers/canvas-service';
+
 
 export abstract class DrawingModeBase {
-  protected readonly canvas: fabric.Canvas;
-  protected readonly gridService: GridService;
-  protected readonly eventAggregator: EventAggregator;
+  public canvas: fabric.Canvas;
+  protected canvasService: CanvasService;
 
   abstract onMouseUp(options: fabric.IEvent<MouseEvent>): boolean | void;
   abstract onMouseMove(options: fabric.IEvent<MouseEvent>): boolean | void;
   abstract load(): void;
   abstract unload(): void;
 
-  constructor(canvas: fabric.Canvas, gridService: GridService, eventAggregator: EventAggregator) {
-    this.canvas = canvas;
-    this.gridService = gridService;
-    this.eventAggregator = eventAggregator;
-  }
+  constructor(
+    @IEventAggregator protected readonly eventAggregator: EventAggregator
+  ) { }
 
-  public get DOMCanvas(): HTMLCanvasElement {
-    return this.canvas?.getContext().canvas;
-  }
-
-  public get CanvasContext(): CanvasRenderingContext2D {
-    return this.canvas?.getContext();
+  public attachCanvasService(canvasService: CanvasService) {
+    this.canvasService = canvasService;
   }
 
   public renderAll() {
-    return this.canvas?.renderAll();
+    return this.canvasService.canvas?.renderAll();
   }
 
   /**
@@ -43,9 +37,12 @@ export abstract class DrawingModeBase {
     const newRack = new Rack({
       left: rackDetails.left,
       top: rackDetails.top
+    }, {
+      canvasService: this.canvasService,
+      eventAggregator: this.eventAggregator
     });
 
-    this.canvas.add(newRack);
+    this.canvasService.canvas.add(newRack);
 
     return newRack;
   }
@@ -54,11 +51,11 @@ export abstract class DrawingModeBase {
    * Removes a hardware from the canvas.
    */
   public deleteHardware(hardware: Hardware) {
-    this.canvas.remove(hardware as any);
+    this.canvasService.canvas.remove(hardware as any);
 
     this.eventAggregator.publish(new HardwareDeselected(hardware));
 
-    this.canvas.renderAll();
+    this.renderAll();
   }
 
 }

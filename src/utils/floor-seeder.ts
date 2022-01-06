@@ -1,23 +1,18 @@
 import { EventAggregator } from "aurelia";
 import { DrawingModeBase } from "../components/warehouse-floor/drawing-modes/drawing-mode-base";
-import { UpdateDrawMode, DrawMode, HardwareSelected } from "../messages/messages";
-import { GridService } from "../service-providers/grid-service";
+import { HardwareSelected } from "../messages/messages";
 
 export default class FloorSeeder {
-  protected readonly canvas: fabric.Canvas;
-  protected readonly gridService: GridService;
-  protected readonly eventAggregator: EventAggregator;
-  public drawingModeHandler: DrawingModeBase;
+  private readonly eventAggregator: EventAggregator;
+  private readonly drawingModeHandler: DrawingModeBase;
 
-  constructor(canvas: fabric.Canvas, drawingModeHandler: DrawingModeBase, gridService: GridService, eventAggregator: EventAggregator) {
-    this.canvas = canvas;
+  constructor(drawingModeHandler: DrawingModeBase, eventAggregator: EventAggregator) {
     this.drawingModeHandler = drawingModeHandler;
-    this.gridService = gridService;
     this.eventAggregator = eventAggregator;
   }
 
   public seed() {
-    //seed floor
+    // seed floor
     this.drawingModeHandler.createRack({
       top: 120,
       left: 500,

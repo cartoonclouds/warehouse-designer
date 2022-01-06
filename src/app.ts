@@ -1,13 +1,13 @@
 import { EventAggregator, IDisposable, IEventAggregator, inject } from "aurelia";
 
 import { HardwareSelected, HardwareDeselected } from './messages/messages';
-import { Rack } from "./models";
 import { Hardware } from "./models/hardware";
-import { RackProperties } from './components/hardware-properties/rack-properties/rack-properties';
+import { IObserverLocator, ObserverLocator } from '@aurelia/runtime';
 
 @inject()
 export class App {
   public static readonly InfoBarHeight = 104;
+  public static observer: ObserverLocator;
 
   // Event subscriptions
   protected messageSubscriptions: IDisposable[] = [];
@@ -16,8 +16,10 @@ export class App {
 
   constructor(
     protected readonly element: HTMLElement,
+    protected readonly observerLocator: ObserverLocator,
     @IEventAggregator protected readonly eventAggregator: EventAggregator
   ) {
+    App.observer = observerLocator;
   }
 
   public binding() {

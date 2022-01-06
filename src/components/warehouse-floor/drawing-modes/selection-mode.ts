@@ -1,19 +1,18 @@
-import { IEventAggregator, EventAggregator } from 'aurelia';
+import { IEventAggregator, EventAggregator, inject } from 'aurelia';
 import { DrawMode } from '../../../messages/messages';
-import { GridService } from '../../../service-providers/grid-service';
+import CanvasService from '../../../service-providers/canvas-service';
 import { DrawingModeBase } from './drawing-mode-base';
 
-export class _SelectionDrawingMode extends DrawingModeBase {
+@inject()
+export class SelectionDrawingMode extends DrawingModeBase {
   public static readonly mode: string = DrawMode.SELECTION;
-  public mode = _SelectionDrawingMode.mode;
+  public mode = SelectionDrawingMode.mode;
 
   constructor(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator) {
-    super(canvas, gridService, eventAggregator);
+    @IEventAggregator protected readonly eventAggregator: EventAggregator
+  ) {
+    super(eventAggregator);
   }
-
 
 
   public onMouseMove(options: fabric.IEvent<MouseEvent>) {
@@ -32,23 +31,5 @@ export class _SelectionDrawingMode extends DrawingModeBase {
 
   public unload() {
 
-  }
-}
-
-export class SelectionDrawingMode {
-  private static instance: Readonly<_SelectionDrawingMode>;
-
-  public static getInstance(
-    canvas: fabric.Canvas,
-    gridService: GridService,
-    eventAggregator: EventAggregator
-  ) {
-    if (!SelectionDrawingMode.instance) {
-      SelectionDrawingMode.instance = new _SelectionDrawingMode(canvas, gridService, eventAggregator);
-    }
-
-    SelectionDrawingMode.instance.load();
-
-    return SelectionDrawingMode.instance;
   }
 }

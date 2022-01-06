@@ -2,11 +2,9 @@ import { fabric } from "fabric";
 import { observable } from '@aurelia/runtime';
 import { Rack } from ".";
 import { HardwareEvent } from "./hardware";
-import { WarehouseFloor } from '../components';
 
 
 export type IShelf = Shelf;
-export type IShelves = Shelves & fabric.IGroupOptions;
 
 export class Shelf extends fabric.Object {
   public static readonly type: string = "Shelf";
@@ -17,9 +15,10 @@ export class Shelf extends fabric.Object {
   public rack: Rack;
 
 
+  public fabricLabel: fabric.Text;
   public label: string;
   public get defaultLabel() {
-    return `Shelf-${WarehouseFloor.shelves.length + 1} for Rack ${this.rack?.label}`;
+    return `Shelf-${1} for Rack ${this.rack?.label}`;
   }
 
   constructor(shelfDetails: Partial<Shelf>, rack: Rack) {
@@ -36,6 +35,28 @@ export class Shelf extends fabric.Object {
     this.label = shelfDetails.label || this.defaultLabel;
     this.notes = shelfDetails.notes;
     this.code = shelfDetails.code;
+  }
+
+  public get count() {
+    return 0;
+  }
+
+  protected generateLabel() {
+    if (!this.fabricLabel) {
+      this.fabricLabel = new fabric.Text(`Shelves Count ${this.count}`, {
+        top: 0,
+        left: 0,
+        fontFamily: 'Helvetica',
+        strokeWidth: 0,
+        stroke: '#333',
+        fontSize: 14,
+        selectable: false,
+        evented: false,
+        hasControls: false,
+      });
+    }
+
+    return this.fabricLabel;
   }
 
 
@@ -64,43 +85,41 @@ export class Shelf extends fabric.Object {
 }
 
 
-export class Shelves extends fabric.Group {
-  public static readonly type: string = "Shelves";
-  public type = Shelves.type;
+// export class Shelves extends fabric.Group {
+//   public static readonly type: string = "Shelves";
+//   public type = Shelves.type;
 
-  protected rack: Rack;
-  protected shelves: Shelf[] = [];
+//   protected rack: Rack;
+//   protected shelves: Shelf[] = [];
 
-  protected static DEFAULT_SHELF_PROPS = {
-    type: Shelves.type,
-    fill: 'red',
-    subTargetCheck: true,
-    hasControls: false,
-    selectable: false,
-    evented: false,
-    perPixelTargetFind: true
-  };
-
-  protected label: fabric.Text;
+//   protected static DEFAULT_SHELF_PROPS = {
+//     type: Shelves.type,
+//     fill: 'red',
+//     subTargetCheck: true,
+//     hasControls: false,
+//     selectable: false,
+//     evented: false,
+//     perPixelTargetFind: true
+//   };
 
 
-  public constructor(rack: Rack) {
-    super([], {
-      type: Shelves.type
-    });
+//   public constructor(rack: Rack) {
+//     super([], {
+//       type: Shelves.type
+//     });
 
-    this.rack = rack;
+    // this.rack = rack;
 
-    this.addWithUpdate(this.generateLabel());
+    // this.addWithUpdate(this.generateLabel());
 
-    this.setOptions(Object.assign({}, Shelves.DEFAULT_SHELF_PROPS, {
-      left: rack.left,
-      top: rack.top,
-      width: rack.width,
-      height: rack.height
-    }));
+    // this.setOptions(Object.assign({}, Shelves.DEFAULT_SHELF_PROPS, {
+    //   left: rack.left,
+    //   top: rack.top,
+    //   width: rack.width,
+    //   height: rack.height
+    // }));
 
-    this.attachObservers();
+    // this.attachObservers();
 
     // const shelfImage = new fabric.IText('\f1ea HELLO HELLO HELLO HELLO', {
     //   top: 0,
@@ -130,43 +149,24 @@ export class Shelves extends fabric.Group {
     //         group.push(object);
     // });
 
-  }
+  // }
 
-  protected generateLabel() {
-    if (!this.label) {
-      this.label = new fabric.Text(`Shelves Count ${this.count}`, {
-        top: 0,
-        left: 0,
-        fontFamily: 'Helvetica',
-        strokeWidth: 0,
-        stroke: '#333',
-        fontSize: 14,
-        selectable: false,
-        evented: false,
-        hasControls: false,
-      });
-    }
 
-    return this.label;
-  }
+  // protected attachObservers() {
+  //   WarehouseFloor.observer
+  //     .getArrayObserver(this._objects)
+  //     .subscribe({
+  //       handleCollectionChange: (newVale) => {
+  //         this.label.text = `Shelves Count ${this.count}`;
+  //       }
+  //     });
+  // }
 
-  protected attachObservers() {
-    WarehouseFloor.observer
-      .getArrayObserver(this._objects)
-      .subscribe({
-        handleCollectionChange: (newVale) => {
-          this.label.text = `Shelves Count ${this.count}`;
-        }
-      });
-  }
 
-  public get count() {
-    return this.getObjects(Shelf.type).length;
-  }
 
-  public addShelf(shelfDetails: Partial<Shelf> = {}) {
-    this.addWithUpdate(new Shelf(shelfDetails, this.rack));
-  }
+  // public addShelf(shelfDetails: Partial<Shelf> = {}) {
+  //   this.addWithUpdate(new Shelf(shelfDetails, this.rack));
+  // }
 
 
   // [Symbol.iterator]() {
@@ -186,4 +186,4 @@ export class Shelves extends fabric.Group {
   //     }
   //   }
   // }
-}
+// }

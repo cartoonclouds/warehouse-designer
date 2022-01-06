@@ -3,24 +3,27 @@ import { fabric } from "fabric";
 import { observable } from '@aurelia/runtime';
 import { IObjectOptions } from "fabric/fabric-impl";
 import { Shelf } from ".";
-import { IHardware, WarehouseFloor } from "../components";
-import { HardwareEvent, Drawable } from "./hardware";
+import { HardwareEvent, Drawable, IHardware } from "./hardware";
 import { HardwareSelected, HardwareDeselected } from "../messages/messages";
 import { DOMUtility } from "../utils/dom";
-import { Shelves } from "./shelf";
-
+import CanvasService from "../service-providers/canvas-service";
+import { App } from "../app";
 
 export type IRack = Rack & fabric.IGroupOptions;
 export type IShadowRack = ShadowRack & fabric.IRectOptions;
 
+const RACK_PADDING = 8;
 
 export class Rack extends fabric.Group implements IHardware {
   public static readonly type: string = "Rack";
   public type = Rack.type;
 
+  public canvasService: CanvasService;
+  public eventAggregator: EventAggregator;
+
   public notes: string;
   public code: string;
-  public shelves: Shelves;
+  public shelves: Shelf[] = [];
   public edges = new fabric.Group();
 
   protected initialPosition: { top: number, left: number };
@@ -52,28 +55,27 @@ export class Rack extends fabric.Group implements IHardware {
   };
 
 
-  protected rack: fabric.Rect;
-
   @observable public label: string;
   protected fabricLabel: fabric.Text;
-  public get defaultLabel() {
-    return `Rack-${WarehouseFloor.racks.length + 1}`;
-  }
+  protected fabricShelfLabel: fabric.Text;
 
+  protected fabricRack: fabric.Rect;
 
-  constructor(rackDetails: Partial<IRack>) {
+  constructor(rackDetails: Partial<IRack>, services?: {
+    canvasService: CanvasService,
+    eventAggregator: EventAggregator
+  }) {
     super([], {
       type: Rack.type
     });
 
-    this.rack = new fabric.Rect(Object.assign({}, rackDetails, Rack.DEFAULT_RACK_PROPS));
+    this.fabricRack = new fabric.Rect(Object.assign({}, rackDetails, Rack.DEFAULT_RACK_PROPS));
+    this.addWithUpdate(this.fabricRack);
 
-    this.label = rackDetails.label || this.defaultLabel;
+    this.label = rackDetails.label || services?.canvasService?.defaultRackLabel;
     this.notes = rackDetails.notes;
     this.code = rackDetails.code;
 
-    this.addWithUpdate(this.fabricLabel);
-    this.addWithUpdate(this.rack);
 
     this.setOptions(Object.assign({}, Rack.DEFAULT_GROUP_PROPS, {
       left: rackDetails.left,
@@ -81,11 +83,23 @@ export class Rack extends fabric.Group implements IHardware {
     }));
 
     this.attachEvents();
+
+
+    this.canvasService = services.canvasService;
+    this.eventAggregator = services.eventAggregator;
+
+
+    App.observer.getArrayObserver(this.shelves)
+      .subscribe({
+        handleCollectionChange: () => {
+          this.shelvesChanged();
+        }
+      });
   }
 
 
   protected attachEvents() {
-    this.rack.on("mouseup", (e: fabric.IEvent<MouseEvent>) => {
+    this.fabricRack.on("mouseup", (e: fabric.IEvent<MouseEvent>) => {
       if (this.isIntersecting && this.initialPosition) {
         this.top = this.initialPosition.top;
         this.left = this.initialPosition.left;
@@ -104,7 +118,7 @@ export class Rack extends fabric.Group implements IHardware {
       }))
     });
 
-    this.rack.on("mouseover", (e: fabric.IEvent<MouseEvent>) => {
+    this.fabricRack.on("mouseover", (e: fabric.IEvent<MouseEvent>) => {
       this.setRackOptions({
         strokeWidth: 2,
         strokeDashArray: [10, 10]
@@ -116,7 +130,7 @@ export class Rack extends fabric.Group implements IHardware {
       }));
     });
 
-    this.rack.on("mouseout", (e: fabric.IEvent<MouseEvent>) => {
+    this.fabricRack.on("mouseout", (e: fabric.IEvent<MouseEvent>) => {
       this.setRackOptions({
         strokeWidth: 1,
         strokeDashArray: undefined
@@ -140,7 +154,7 @@ export class Rack extends fabric.Group implements IHardware {
         top: this.top
       };
 
-      WarehouseFloor.eventAggregator.publish(new HardwareSelected(this));
+      this.eventAggregator.publish(new HardwareSelected(this));
 
 
       this.events.push(new HardwareEvent({
@@ -155,7 +169,7 @@ export class Rack extends fabric.Group implements IHardware {
         fill: '#eee'
       });
 
-      WarehouseFloor.eventAggregator.publish(new HardwareDeselected(this));
+      this.eventAggregator.publish(new HardwareDeselected(this));
 
 
       this.events.push(new HardwareEvent({
@@ -167,19 +181,19 @@ export class Rack extends fabric.Group implements IHardware {
       const mousePosition = e.pointer;
 
       if (this.isIntersecting) {
-        WarehouseFloor.setMoveCursor(DOMUtility.Cursors.NOT_ALLOWED);
+        this.canvasService.setCursorType('move', DOMUtility.Cursors.NOT_ALLOWED);
       } else {
-        WarehouseFloor.setMoveCursor(DOMUtility.Cursors.MOVE);
+        this.canvasService.setCursorType('move', DOMUtility.Cursors.MOVE);
       }
 
-      WarehouseFloor.setCursor(this.moveCursor);
+      this.canvasService.setCursor(this.moveCursor);
 
       this.left = this.constrainX(this.snapX(mousePosition.x - (this.width / 2)));
       this.top = this.constrainY(this.snapY(mousePosition.y - (this.height / 2)));
       this.setCoords();
 
 
-      WarehouseFloor.renderAll(this.rack);
+      this.canvasService.renderAll(this.fabricRack);
 
 
 
@@ -198,7 +212,7 @@ export class Rack extends fabric.Group implements IHardware {
   public get isIntersecting(): fabric.Object {
     let intersectigHardware: fabric.Object;
 
-    for (let hardware of WarehouseFloor.getAllHardwareExcept(this)) {
+    for (let hardware of this.canvasService.getAllHardwareExcept(this)) {
       if (hardware.intersectsWithObject(this)) {
         intersectigHardware = hardware;
         break;
@@ -209,43 +223,68 @@ export class Rack extends fabric.Group implements IHardware {
   }
 
   public setRackOptions(options: IObjectOptions): void {
-    this.rack.setOptions(options);
+    this.fabricRack.setOptions(options);
 
     // see "When to call setCoords" github page
-    this.rack.setCoords();
-    this.rack.set('dirty', true);
+    this.fabricRack.setCoords();
+    this.fabricRack.set('dirty', true);
 
-    WarehouseFloor.renderAll(this.rack);
+    this.canvasService.renderAll(this.fabricRack);
   }
 
   public addShelf(shelfDetails: Partial<Shelf> = {}) {
-    if (!this.shelves) {
-      this.shelves = new Shelves(this);
 
-      this.addWithUpdate(this.shelves);
-    }
-
-
-    this.shelves.addShelf(shelfDetails);
+    this.shelves.push(new Shelf(shelfDetails, this));
 
     // this.setCoords();
     // this.setObjectsCoords();
     // this.forEachObject(o => o.setCoords());
 
-    WarehouseFloor.renderAll(this.shelves);
+    this.canvasService.renderAll([this.fabricShelfLabel, ...this.shelves]);
   }
 
   public _render(ctx: CanvasRenderingContext2D) {
     super._render(ctx);
 
+    this.fabricRack.render(ctx);
+    this.fabricLabel.render(ctx);
+    this.fabricShelfLabel.render(ctx);
+
     this.bringToFront();
   }
 
+  public shelvesChanged() {
+    const shelfCountText = `${this.shelves.length}`;
 
-  public labelChanged(label) {
+    if (!this.fabricShelfLabel) {
+      this.fabricShelfLabel = new fabric.Text(shelfCountText, {
+        top: this.top + RACK_PADDING,
+        left: this.left,
+        fontFamily: 'Helvetica',
+        strokeWidth: 0,
+        fill: 'red',
+        fontSize: 24,
+        selectable: false,
+        evented: false,
+        hasControls: false,
+      });
+
+      this.fabricShelfLabel.left = (this.left + this.width) - this.fabricShelfLabel.width - RACK_PADDING;
+      this.setCoords();
+
+      this.addWithUpdate(this.fabricShelfLabel);
+    }
+
+
+    this.fabricLabel.bringToFront();
+    this.fabricShelfLabel.text = shelfCountText;
+    this.fabricShelfLabel.set('dirty', true);
+  }
+
+  public labelChanged() {
     if (!this.fabricLabel) {
       this.fabricLabel = new fabric.Text(this.label, {
-        left: this.left,
+        left: this.left + RACK_PADDING,
         fontFamily: 'Helvetica',
         strokeWidth: 0,
         stroke: '#333',
@@ -255,13 +294,15 @@ export class Rack extends fabric.Group implements IHardware {
         hasControls: false,
       });
 
-      this.fabricLabel.top = this.top - this.fabricLabel.calcTextHeight() - 4;
+      this.addWithUpdate(this.fabricLabel);
     }
 
+    this.fabricLabel.top = this.oCoords.bl.y - (this.height / 2) - this.fabricLabel.calcTextHeight() - (RACK_PADDING / 2);
+    this.setCoords();
+
+    this.fabricLabel.bringToFront();
     this.fabricLabel.text = this.label;
     this.fabricLabel.set('dirty', true);
-
-    WarehouseFloor.renderAll(this.fabricLabel);
   }
 
 
@@ -276,7 +317,7 @@ export class Rack extends fabric.Group implements IHardware {
   public constrainX(leftPoint) {
     let constrainedX = Math.max(0, leftPoint);
 
-    constrainedX = Math.min(constrainedX, WarehouseFloor.width - 80)
+    constrainedX = Math.min(constrainedX, this.canvasService.width - 80)
 
     return constrainedX;
   }
@@ -284,7 +325,7 @@ export class Rack extends fabric.Group implements IHardware {
   public constrainY(topPoint) {
     let constrainedY = Math.max(0, topPoint);
 
-    constrainedY = Math.min(constrainedY, WarehouseFloor.height - 160);
+    constrainedY = Math.min(constrainedY, this.canvasService.height - 160);
 
     return constrainedY;
   }
@@ -331,7 +372,7 @@ export class ShadowRack extends Rack implements Drawable {
       evented: false
     }));
 
-    this.rack.off("mouseup");
+    this.fabricRack.off("mouseup");
   }
 
 
@@ -347,9 +388,9 @@ export class ShadowRack extends Rack implements Drawable {
 
     // Cannot create rack on top on another
     if (this.isIntersecting) {
-      WarehouseFloor.setCursor(DOMUtility.Cursors.NOT_ALLOWED);
+      this.canvasService.setCursor(DOMUtility.Cursors.NOT_ALLOWED);
     } else {
-      WarehouseFloor.setCursor(DOMUtility.Cursors.DEFAULT);
+      this.canvasService.setCursor(DOMUtility.Cursors.DEFAULT);
     }
 
   }
