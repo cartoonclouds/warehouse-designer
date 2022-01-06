@@ -36,7 +36,7 @@ export class Rack extends fabric.Group implements IHardware {
     fill: '#eee',
     stroke: '#000',
     strokeWidth: 1,
-    hasControls: true,
+    hasControls: false,
     selectable: true,
     evented: true,
     perPixelTargetFind: true,
@@ -284,6 +284,7 @@ export class Rack extends fabric.Group implements IHardware {
   public labelChanged() {
     if (!this.fabricLabel) {
       this.fabricLabel = new fabric.Text(this.label, {
+        top: 4, // Required to prevent small gap between rack top and group top
         left: this.left + RACK_PADDING,
         fontFamily: 'Helvetica',
         strokeWidth: 0,
